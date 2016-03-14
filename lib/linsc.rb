@@ -1,15 +1,12 @@
 require "linsc/version"
 
-module Linsc
-  # Your code goes here...
-end
-#######
 require 'mechanize'
 require 'fileutils'
 require 'csv'
 require 'i18n'
 
-class Linsc
+module Linsc
+
   #take cmdline args for initialization
   #generate necessary files
   #initialize proxy handler
@@ -30,4 +27,14 @@ class Linsc
   # =>             LinRow,SFRow,DDGRow etc, basically as wrappers around
   # =>              the CSV::Row objects used in each case, easier field access
 
+
+
 end
+
+def bootstrap
+  merger = Merger.new('../input/sample/')
+  merger.merge
+
+end
+
+bootstrap

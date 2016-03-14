@@ -1,9 +1,10 @@
-require "linsc/version"
+#require "linsc/version"
 
 require 'mechanize'
 require 'fileutils'
 require 'csv'
 require 'i18n'
+require './linsc/merger'
 
 module Linsc
 
@@ -32,7 +33,7 @@ module Linsc
 end
 
 def bootstrap
-  merger = Merger.new('../input/sample/')
+  merger = Merger.new('../input/full/')
   merger.merge
 
 end

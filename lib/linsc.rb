@@ -5,6 +5,8 @@ require 'fileutils'
 require 'csv'
 require 'i18n'
 require './linsc/merger'
+require './linsc/cross_ref'
+require './linsc/csv_handlers'
 
 module Linsc
 
@@ -33,8 +35,10 @@ module Linsc
 end
 
 def bootstrap
-  merger = Merger.new('../input/full/')
-  merger.merge
+  working_dir = '../input/full/'
+  #merger = Merger.new(working_dir)
+  #merged = merger.merge
+  crossref = CrossRef.new(working_dir, "#{working_dir}merged.csv", "#{working_dir}sf_ref.csv")
 
 end
 

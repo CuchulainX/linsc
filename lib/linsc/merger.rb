@@ -1,10 +1,14 @@
+require './linsc/csv_handlers'
+
+
 class Merger
+  include CSVHandlers
 
   def initialize(input_dir)
     @input_dir = input_dir
+    @output_file = "#{@input_dir}merged.csv"
     @recruiters = File.read('./../data/recruiters.txt').split(",").collect{|r| r.strip}
-    @headers = ["First Name",	"Last Name",	"Company",
-      "Job Title",	"E-mail Address",	"Recruiter"]
+    @headers = ["First Name", "Last Name", "E-mail Address", "Recruiter", "Company", "Job Title"]
   end
 
   def construct_emails_hash
@@ -28,7 +32,7 @@ class Merger
 
   def merge
     emails = construct_emails_hash
-    create_file("#{@input_dir}merged.csv")
+    create_file(@output_file)
     i = 0
     j = emails.length
     emails.each do |ek, ev|
@@ -40,30 +44,8 @@ class Merger
         end
       end
       output = create_row(correct_row, @headers)
-      append_to_csv("#{@input_dir}merged.csv", output)
+      append_to_csv(@output_file, output)
     end
-  end
-
-  def create_row(row, headers)
-    values = []
-    headers.each do |header|
-      values << row[header]
-    end
-    CSV::Row.new(headers, values)
-  end
-
-  def append_to_csv(file, row)
-    f = CSV.open(file, "a+", headers: row.headers)
-    f << row
-    f.close
-  end
-
-  def create_file(f)
-    unless File.exist?(f)
-      FileUtils.touch(f)
-      csv = CSV.open(f, "w+")
-      csv << @headers
-      csv.close
-    end
+    @output_file
   end
 end

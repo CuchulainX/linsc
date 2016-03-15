@@ -7,7 +7,7 @@ class CrossRef
     @input_dir = input_dir
     @lin_input = lin
     @sf_input = sf
-    @output_file = "#{@input_dir}crossref.csv"
+    @output_file = "#{@input_dir}crossref3.csv"
     @headers = get_headers(sf)
     create_file(@output_file)
     cross_ref
@@ -15,7 +15,7 @@ class CrossRef
 
   def cross_ref
     sf_data = CSV.read(@sf_input, headers: true)
-    sf_data.sort! do |x, y|
+    sf_data = sf_data.sort do |x, y|
       a = x['Email']
       b = y['Email']
       puts "{#{a} <=> #{b}}"
@@ -24,28 +24,37 @@ class CrossRef
       a && b ? a <=> b : a ? -1 : 1
     end
     sf_data.first(10).each do |x| puts x['Email'] end
-    # i = 0
-    # CSV.foreach(@lin_input, headers: true, encoding: 'windows-1252') do |lin_row|
-    #   i += 1
-    #   puts "lin row: #{i}"
-    #   lin_email = lin_row['E-mail Address']&.downcase
-    #   if lin_email.include?('@')
-    #     sf_match = sf_data.find_index do |sf_row|
-    #        sf_emails = [sf_row['Email']&.downcase, sf_row['Email 2']&.downcase, sf_row['Email 3']&.downcase]
-    #        sf_emails.include?(lin_email)
-    #       #lin_email == sf_row['Email']&.downcase
-    #     end
-    #     if sf_match
-    #
-    #       append_to_csv(@output_file, splice_rows(sf_data[sf_match], lin_row))
-    #       sf_data.delete(sf_match)
-    #     else
-    #       append_to_csv(@output_file, convert_row(lin_row))
-    #     end
-    #   else
-    #     puts "missing email"
-    #   end
-    # end
+    sf_emails = sf_data.collect {|row| row['Email']&.downcase}
+    i = 0
+    q = 0
+    g = 0
+    CSV.foreach(@lin_input, headers: true, encoding: 'windows-1252') do |lin_row|
+      i += 1
+      puts "lin row: #{i}"
+      lin_email = lin_row['E-mail Address']&.downcase
+      if lin_email.include?('@')
+        sf_match = sf_emails.bsearch_index do |sf_email|
+           lin_email && sf_email ? lin_email <=> sf_email : lin_email ? -1 : 1
+        end
+        if !sf_match
+          sf_match = sf_data.find_index do |sf_row|
+            sf_row_emails = [sf_row['Email 2']&.downcase, sf_row['Email 3']&.downcase]
+            sf_row_emails.include?(lin_email)
+          end
+          q += 1 if sf_match
+        else
+          g += 1
+        end
+        if sf_match
+          append_to_csv(@output_file, splice_rows(sf_data[sf_match], lin_row))
+        else
+          append_to_csv(@output_file, convert_row(lin_row))
+        end
+      else
+        puts "missing email"
+      end
+    end
+    puts "#{g} emails in field 1, #{q} in 2 or 3"
   end
 
   def splice_rows(sf_row, lin_row)

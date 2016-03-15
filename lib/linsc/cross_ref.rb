@@ -15,28 +15,37 @@ class CrossRef
 
   def cross_ref
     sf_data = CSV.read(@sf_input, headers: true)
-    i = 0
-    CSV.foreach(@lin_input, headers: true, encoding: 'windows-1252') do |lin_row|
-      i += 1
-      puts "lin row: #{i}"
-      lin_email = lin_row['E-mail Address']&.downcase
-      if lin_email.include?('@')
-        sf_match = sf_data.find_index do |sf_row|
-           sf_emails = [sf_row['Email']&.downcase, sf_row['Email 2']&.downcase, sf_row['Email 3']&.downcase]
-           sf_emails.include?(lin_email)
-          #lin_email == sf_row['Email']&.downcase
-        end
-        if sf_match
-
-          append_to_csv(@output_file, splice_rows(sf_data[sf_match], lin_row))
-          sf_data.delete(sf_match)
-        else
-          append_to_csv(@output_file, convert_row(lin_row))
-        end
-      else
-        puts "missing email"
-      end
+    sf_data.sort! do |x, y|
+      a = x['Email']
+      b = y['Email']
+      puts "{#{a} <=> #{b}}"
+      puts "{#{a.class} <=> #{b.class}}"
+      puts "#{a <=> b}"
+      a && b ? a <=> b : a ? -1 : 1
     end
+    sf_data.first(10).each do |x| puts x['Email'] end
+    # i = 0
+    # CSV.foreach(@lin_input, headers: true, encoding: 'windows-1252') do |lin_row|
+    #   i += 1
+    #   puts "lin row: #{i}"
+    #   lin_email = lin_row['E-mail Address']&.downcase
+    #   if lin_email.include?('@')
+    #     sf_match = sf_data.find_index do |sf_row|
+    #        sf_emails = [sf_row['Email']&.downcase, sf_row['Email 2']&.downcase, sf_row['Email 3']&.downcase]
+    #        sf_emails.include?(lin_email)
+    #       #lin_email == sf_row['Email']&.downcase
+    #     end
+    #     if sf_match
+    #
+    #       append_to_csv(@output_file, splice_rows(sf_data[sf_match], lin_row))
+    #       sf_data.delete(sf_match)
+    #     else
+    #       append_to_csv(@output_file, convert_row(lin_row))
+    #     end
+    #   else
+    #     puts "missing email"
+    #   end
+    # end
   end
 
   def splice_rows(sf_row, lin_row)

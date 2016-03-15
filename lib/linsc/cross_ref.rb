@@ -32,7 +32,7 @@ class CrossRef
       i += 1
       puts "lin row: #{i}"
       lin_email = lin_row['E-mail Address']&.downcase
-      if lin_email.include?('@')
+      if lin_email&.include?('@')
         sf_match = sf_emails.bsearch_index do |sf_email|
            lin_email && sf_email ? lin_email <=> sf_email : lin_email ? -1 : 1
         end

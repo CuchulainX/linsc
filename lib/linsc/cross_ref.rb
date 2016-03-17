@@ -1,6 +1,24 @@
 require './linsc/csv_handlers'
-#sf -> master sheet
-#lin -> child sheet
+
+# refactoring notes:
+# this class should provide general functionality, and not rely on specifics of
+# what exact field names or data is present in either sheet
+# the lookup fields, as well as field mappings for the merged output,
+# should be provided by the function using this class
+# values that should be provided to this class:
+# => master lookup field name
+# => child lookup field name
+# => optional secondary master lookup fields
+# => a mappings hash in the form {master_field: child_field}
+# => the master headers will be used, and any child values present in the row and mapping will
+# => overwrite the master values, other master valeus will remain intact
+# => optional downcase_lookup arg for email lookups
+# => arg to specify what the output encoding will be, default utf-8
+# => possibly just return the CSV, and let the caller handle writing it
+# something similar can be done for the merge class
+# do these even qualify as seperate class by this point, or should the be incorporated
+# into the CSVHandlers module?
+
 class CrossRef
   include CSVHandlers
 
@@ -8,7 +26,7 @@ class CrossRef
     @input_dir = input_dir
     @child_path = child_path
     @master_path = master_path
-    @output_file = "#{@input_dir}crossref.csv"
+    @output_file = "#{@input_dir}crossref_test3.csv"
     @headers = get_headers(@master_path)
     create_file(@output_file)
     cross_ref
@@ -16,7 +34,9 @@ class CrossRef
 
   def cross_ref
     master_data = CSV.read(@master_path, headers: true)
+    puts "sorting lookup values"
     master_data = master_data.sort do |x, y|
+      # turns out the debugging I/O was by far the most costly part of this sort
       a = x['Email']
       b = y['Email']
       a && b ? a <=> b : a ? -1 : 1
@@ -34,7 +54,7 @@ class CrossRef
         end
         if !match_index
           match_index = master_data.find_index do |master_row|
-            master_secondary_lookups = [master_row['Email 2']&.downcase, sf_row['Email 3']&.downcase]
+            master_secondary_lookups = [master_row['Email 2']&.downcase, master_row['Email 3']&.downcase]
             master_secondary_lookups.include?(child_lookup_value)
           end
         end
@@ -57,9 +77,9 @@ class CrossRef
     master_row['Employer 1 Title'] = child_row['Job Title'] if child_row['Job Title']
     master_row_new = CSV::Row.new(@headers, [])
     master_row.each do |key, value|
-      sf_row_new[key] = value#&.encode('windows-1252', invalid: :replace, undef: :replace, replace: '#')
+      master_row_new[key] = value&.encode('utf-8', invalid: :replace, undef: :replace, replace: '#')
     end
-    sf_row_new
+    master_row_new
 
   end
 

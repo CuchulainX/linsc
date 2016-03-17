@@ -8,9 +8,7 @@ module CSVHandlers
   end
 
   def append_to_csv(file, row)
-
-    f = CSV.open(file, "a+", headers: row.headers, encoding: 'windows-1252')
-    encodings = row.collect{|k, v| v&.encoding}
+    f = CSV.open(file, "a+", headers: row.headers, force_quotes: true)
     f << row
     f.close
   end
@@ -19,8 +17,12 @@ module CSVHandlers
     unless File.exist?(f)
       FileUtils.touch(f)
       csv = CSV.open(f, "w+")
-      csv << @headers
+      csv << @headers.collect {|x| x&.encode('utf-8')}
       csv.close
     end
+  end
+
+  def get_headers(file)
+    CSV.open(file, headers: true, return_headers: true).shift.headers
   end
 end

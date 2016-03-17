@@ -7,7 +7,7 @@ class CrossRef
     @input_dir = input_dir
     @lin_input = lin
     @sf_input = sf
-    @output_file = "#{@input_dir}crossref3.csv"
+    @output_file = "#{@input_dir}crossref_fresh.csv"
     @headers = get_headers(sf)
     create_file(@output_file)
     cross_ref

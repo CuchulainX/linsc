@@ -35,10 +35,14 @@ module Linsc
 end
 
 def bootstrap
+  merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
+               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer Title 1',
+               'Recruiter' => 'LIN 1st Degree'}
+  
   working_dir = '../input/full/'
-  #merger = Merger.new(working_dir)
-  #merged = merger.merge
-  crossref = CrossRef.new(working_dir, "#{working_dir}merged.csv", "#{working_dir}sf_ref2.csv")
+  merger = Merger.new(working_dir, 'merged_utf3.csv', merge_map)
+  merged = merger.merge
+  #crossref = CrossRef.new(working_dir, "#{working_dir}merged.csv", "#{working_dir}sf_ref2.csv")
 
 end
 

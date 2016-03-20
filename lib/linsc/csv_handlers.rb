@@ -1,8 +1,12 @@
 module CSVHandlers
-  def create_row(row, headers)
+  def create_row(row, headers, encoding = nil)
     values = []
     headers.each do |header|
-      values << row[header]
+      if encoding
+        values << row[header]&.encode(encoding)
+      else
+        values << row[header]
+      end
     end
     CSV::Row.new(headers, values)
   end

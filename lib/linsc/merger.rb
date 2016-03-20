@@ -4,11 +4,16 @@ require './linsc/csv_handlers'
 class Merger
   include CSVHandlers
 
-  def initialize(input_dir)
+  def initialize(input_dir, output_name, mapping = nil)
     @input_dir = input_dir
-    @output_file = "#{@input_dir}merged.csv"
+    @output_file = "#{@input_dir}#{output_name}"
     @recruiters = File.read('./../data/recruiters.txt').split(",").collect{|r| r.strip}
-    @headers = ["First Name", "Last Name", "E-mail Address", "Recruiter", "Company", "Job Title"]
+    @mapping = mapping
+    if mapping
+      @headers = mapping.values
+    else
+      @headers = get_headers(Dir.glob("#{@input_dir}LIN*.csv").first)
+    end
   end
 
   def construct_emails_hash
@@ -43,8 +48,18 @@ class Merger
            ev.collect {|row| row['Recruiter']}.include?(rec)
         end
       end
-      output = create_row(correct_row, @headers)
-      append_to_csv(@output_file, output)
+      if @mapping
+        output_row = CSV::Row.new(@headers, [])
+        correct_row.each do |key, value|
+          if @mapping[key]
+            output_row[@mapping[key]] = value&.encode('utf-8')
+          end
+        end
+        output_row['Email'] = output_row['Email']&.downcase
+      else
+        output_row = create_row(correct_row, @headers, 'utf-8')
+      end
+      append_to_csv(@output_file, output_row)
     end
     @output_file
   end

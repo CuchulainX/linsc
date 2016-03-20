@@ -36,13 +36,14 @@ end
 
 def bootstrap
   merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
-               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer Title 1',
+               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
                'Recruiter' => 'LIN 1st Degree'}
-  
-  working_dir = '../input/full/'
-  merger = Merger.new(working_dir, 'merged_utf3.csv', merge_map)
+
+ working_dir = '../input/full/'
+  merger = Merger.new(working_dir, 'merged_utf4.csv', merge_map)
   merged = merger.merge
-  #crossref = CrossRef.new(working_dir, "#{working_dir}merged.csv", "#{working_dir}sf_ref2.csv")
+  crossref = CrossRef.new(input_dir: working_dir, child_path: "#{working_dir}merged_utf4.csv",
+  master_path: "#{working_dir}sf_ref2.csv", output_name: 'crossref_generic2')
 
 end
 

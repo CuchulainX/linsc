@@ -26,6 +26,15 @@ module CSVHandlers
     end
   end
 
+  def create_file_with_headers(f, headers)
+    unless File.exist?(f)
+      FileUtils.touch(f)
+      csv = CSV.open(f, "w+")
+      csv << headers.collect {|x| x&.encode('utf-8')}
+      csv.close
+    end
+  end
+
   def get_headers(file)
     CSV.open(file, headers: true, return_headers: true).shift.headers
   end

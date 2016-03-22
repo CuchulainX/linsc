@@ -1,4 +1,4 @@
-require './linsc/csv_handlers'
+require_relative 'csv_handlers'
 
 # refactoring notes:
 # this class should provide general functionality, and not rely on specifics of

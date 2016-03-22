@@ -4,9 +4,12 @@ require 'mechanize'
 require 'fileutils'
 require 'csv'
 require 'i18n'
-require './linsc/merger'
-require './linsc/cross_ref'
-require './linsc/csv_handlers'
+require_relative './linsc/merger'
+require_relative './linsc/cross_ref'
+require_relative './linsc/csv_handlers'
+require_relative './linsc/duck'
+require_relative './linsc/lin'
+
 
 module Linsc
 
@@ -35,15 +38,18 @@ module Linsc
 end
 
 def bootstrap
-  merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
-               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
-               'Recruiter' => 'LIN 1st Degree'}
-
+ #  merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
+ #               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
+ #               'Recruiter' => 'LIN 1st Degree'}
+ #
  working_dir = '../input/full/'
-  merger = Merger.new(working_dir, 'merged_utf4.csv', merge_map)
-  merged = merger.merge
-  crossref = CrossRef.new(input_dir: working_dir, child_path: "#{working_dir}merged_utf4.csv",
-  master_path: "#{working_dir}sf_ref2.csv", output_name: 'crossref_generic2')
+ #  merger = Merger.new(working_dir, 'merged_utf4.csv', merge_map)
+ #  merged = merger.merge
+ #  crossref = CrossRef.new(input_dir: working_dir, child_path: "#{working_dir}merged_utf4.csv",
+ #  master_path: "#{working_dir}sf_ref2.csv", output_name: 'crossref_generic2')
+  # DuckScraper.new(working_dir, 'crossref_generic2', 'ddg_results2').find_profiles
+  LinScraper.new(working_dir, 'ddg_results2').start
+
 
 end
 

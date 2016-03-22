@@ -1,4 +1,4 @@
-require './linsc/csv_handlers'
+require_relative 'csv_handlers'
 
 
 class Merger

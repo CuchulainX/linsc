@@ -14,14 +14,42 @@ class String
   end
 end
 
+class NilClass
+  def text
+    return nil
+  end
+  def [](options = {})
+    return nil
+  end
+  def css(options = {})
+    return nil
+  end
+  def gsub(a, b)
+    return nil
+  end
+  def at_css(options = {})
+    return nil
+  end
+  def slice(a, b, options = {})
+    return nil
+  end
+  def include?(a)
+    return false
+  end
+  def gsub!(a, b)
+    return nil
+  end
+
+end
+
 class LinScraper
   include CSVHandlers
 
   def initialize(working_dir, input_file)
     @working_dir = working_dir
     @input_file = "#{working_dir}#{input_file}.csv"
-    @output_update = "#{working_dir}contact_update.csv"
-    @output_insert = "#{working_dir}contact_insert.csv"
+    @output_update = "#{working_dir}contact_update2.csv"
+    @output_insert = "#{working_dir}contact_insert2.csv"
     @output_employment = "#{working_dir}contact_employment.csv"
     @output_education = "#{working_dir}contact_education.csv"
     @proxies = ProxyHandler.new(20)
@@ -49,45 +77,6 @@ class LinScraper
     I18n.available_locales = [:en]
     [@output_insert, @output_update, @output_education, @output_employment].each do |file|
       create_file(file)
-    end
-  end
-
-  def validate(url, row)
-    begin
-      proxy = @proxies.get_proxy
-      puts "proxy: #{proxy.ip}"
-      agent = Mechanize.new
-      agent.set_proxy(proxy.ip, proxy.port, proxy.username, proxy.password)
-      agent.user_agent = proxy.user_agent
-
-      page = agent.get(url)
-
-      return false unless page.at_css("#name") && page.css("#experience .positions .position")
-      return false unless name_check(page.at_css("#name").text, "#{row['First Name']} #{row['Last Name']}")
-      positions = page.css("#experience .positions .position")
-
-      match = false
-      positions.each do |position|
-        if position.at_css("header .item-title a") && position.at_css("header .item-subtitle")
-          profile_title = I18n.transliterate(position.at_css("header .item-title a").text).alnum
-          profile_employer = I18n.transliterate(position.at_css("header .item-subtitle").text).alnum
-          title = I18n.transliterate(row['Employer 1 Title']).alnum
-          employer = I18n.transliterate(row['Employer Organization Name 1']).alnum
-          if name_check(profile_title, title) && name_check(profile_employer, employer)
-            match = true
-          end
-        end
-      end
-      proxy.good
-      match ? page : false
-    rescue Exception => e
-      puts e
-      if e.to_s.start_with?('999')
-        proxy.dead
-        retry
-      else
-        puts e.backtrace
-      end
     end
   end
 
@@ -119,39 +108,45 @@ class LinScraper
     sector = page.at_css("#demographics .descriptor:not(.adr)")&.text
 
     positions = page.css("#experience .positions .position")
-    e1_title = positions[0]&.at_css(".item-title")&.text
-    e1_org = positions[0]&.at_css(".item-subtitle")&.text
-    e1_start = positions[0]&.css(".date-range time")[0]&.text
-    e1_end = positions[0]&.css(".date-range time")[1]&.text
-    e1_loc = positions[0]&.at_css(".location")&.text
-    e1_desc = positions[0]&.at_css(".description")&.text
-    e2_title = positions[1]&.at_css(".item-title")&.text
-    e2_org = positions[1]&.at_css(".item-subtitle")&.text
-    e2_start = positions[1]&.css(".date-range time")[0]&.text
-    e2_end = positions[1]&.css(".date-range time")[1]&.text
-    e2_loc = positions[1]&.at_css(".location")&.text
-    e2_desc = positions[1]&.at_css(".description")&.text
-    e3_title = positions[2]&.at_css(".item-title")&.text
-    e3_org = positions[2]&.at_css(".item-subtitle")&.text
-    e3_start = positions[2]&.css(".date-range time")[0]&.text
-    e3_end = positions[2]&.css(".date-range time")[1]&.text
-    e3_loc = positions[2]&.at_css(".location")&.text
-    e3_desc = positions[2]&.at_css(".description")&.text
+    if positions
+      e1_title = positions[0]&.at_css(".item-title")&.text
+      e1_org = positions[0]&.at_css(".item-subtitle")&.text
+      e1_start = positions[0]&.css(".date-range time")[0]&.text
+      e1_end = positions[0]&.css(".date-range time")[1]&.text
+      e1_loc = positions[0]&.at_css(".location")&.text
+      e1_desc = positions[0]&.at_css(".description")&.text
+      e2_title = positions[1]&.at_css(".item-title")&.text
+      e2_org = positions[1]&.at_css(".item-subtitle")&.text
+      e2_start = positions[1]&.css(".date-range time")[0]&.text
+      e2_end = positions[1]&.css(".date-range time")[1]&.text
+      e2_loc = positions[1]&.at_css(".location")&.text
+      e2_desc = positions[1]&.at_css(".description")&.text
+      e3_title = positions[2]&.at_css(".item-title")&.text
+      e3_org = positions[2]&.at_css(".item-subtitle")&.text
+      e3_start = positions[2]&.css(".date-range time")[0]&.text
+      e3_end = positions[2]&.css(".date-range time")[1]&.text
+      e3_loc = positions[2]&.at_css(".location")&.text
+      e3_desc = positions[2]&.at_css(".description")&.text
+    end
 
     certs = page.css(".certifications .certification")
-    c1_name = certs[0]&.at_css(".item-title")&.text
-    c2_name = certs[1]&.at_css(".item-title")&.text
-    c_type  = certs[0]&.at_css(".item-subtitle")&.text
+    if certs
+      c1_name = certs[0]&.at_css(".item-title")&.text
+      c2_name = certs[1]&.at_css(".item-title")&.text
+      c_type  = certs[0]&.at_css(".item-subtitle")&.text
+    end
 
     schools = page.css("#education .schools .school")
-    s1_name = schools[0]&.at_css(".item-title")&.text
-    s2_name = schools[1]&.at_css(".item-title")&.text
-    s1_start = schools[0]&.css(".date-range time")[0]&.text
-    s2_start = schools[1]&.css(".date-range time")[0]&.text
-    s1_end = schools[0]&.css(".date-range time")[1]&.text
-    s2_end = schools[1]&.css(".date-range time")[1]&.text
-    s1_degree = schools[0]&.at_css(".item-subtitle")&.text
-    s2_degree = schools[1]&.at_css(".item-subtitle")&.text
+    if schools
+      s1_name = schools[0]&.at_css(".item-title")&.text
+      s2_name = schools[1]&.at_css(".item-title")&.text
+      s1_start = schools[0]&.css(".date-range time")[0]&.text
+      s2_start = schools[1]&.css(".date-range time")[0]&.text
+      s1_end = schools[0]&.css(".date-range time")[1]&.text
+      s2_end = schools[1]&.css(".date-range time")[1]&.text
+      s1_degree = schools[0]&.at_css(".item-subtitle")&.text
+      s2_degree = schools[1]&.at_css(".item-subtitle")&.text
+    end
 
     summary = page.at_css("#summary .description")
     summary&.css('br').each{|br| br.replace "\n"} if summary
@@ -368,8 +363,10 @@ class LinScraper
     row["CV Uploaded"] = "1"
 
     if mode == 'update'
+      puts "outputting update"
       append_to_csv(@output_update, row)
     elsif mode == 'insert'
+      puts "outputting insert"
       append_to_csv(@output_insert, row)
     end
 
@@ -424,6 +421,7 @@ class LinScraper
   end
 
   def validate(url, row)
+    puts "url: #{url}"
     begin
       proxy = @proxies.get_proxy
       puts "proxy: #{proxy.ip}"
@@ -432,6 +430,7 @@ class LinScraper
       agent.user_agent = proxy.user_agent unless proxy.ip == 'self'
 
       page = agent.get(url)
+      puts 'ACCESS GRANTED'
 
       return false unless page.at_css("#name") && page.css("#experience .positions .position")
       return false unless name_check(page.at_css("#name").text, "#{row['First Name']} #{row['Last Name']}")
@@ -460,6 +459,9 @@ class LinScraper
       if e.to_s.start_with?('999')
         proxy.dead
         retry
+      elsif e.to_s.start_with?('404') || e.to_s.start_with?('403')
+        proxy.good
+        return false
       else
         puts e.backtrace
         proxy.used
@@ -472,6 +474,7 @@ class LinScraper
     count = 0
     CSV.foreach(@input_file, headers: true) do |input_row|
       count += 1
+      next if count < 0
       tries = @proxies.length
       puts "lin #{count}/#{@input_length}"
       # begin
@@ -483,7 +486,7 @@ class LinScraper
             correct_url, correct_page = validate(url, input_row)
             break if correct_url && correct_page
           end
-          if correct_page
+          if correct_url
             puts "correct page"
             input_row << ["Linkedin Profile", correct_url]
             input_row["Linkedin Import Status"] = 'Profile imported'
@@ -501,16 +504,35 @@ class LinScraper
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
               output_row = create_row(input_row, @headers)
+              puts "outputting update"
+              puts input_row["Linkedin Import Status"]
               append_to_csv(@output_update, output_row)
             else
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
+              puts "outputting insert"
+              puts input_row["Linkedin Import Status"]
               output_row = create_row(input_row, @headers)
               append_to_csv(@output_insert, output_row)
             end
           end
-
+        else
+          if input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
+            input_row << ["Linkedin Profile", nil]
+            input_row.delete('Urls')
+            puts "outputting update"
+            puts input_row["Linkedin Import Status"]
+            output_row = create_row(input_row, @headers)
+            append_to_csv(@output_update, output_row)
+          else
+            input_row << ["Linkedin Profile", nil]
+            input_row.delete('Urls')
+            puts "outputting insert"
+            puts input_row["Linkedin Import Status"]
+            output_row = create_row(input_row, @headers)
+            append_to_csv(@output_insert, output_row)
+          end
         end
       # rescue Exception => msg
       #   tries -= 1

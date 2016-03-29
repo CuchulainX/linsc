@@ -4,6 +4,7 @@ require 'mechanize'
 require 'fileutils'
 require 'csv'
 require 'i18n'
+require 'optparse'
 require_relative './linsc/merger'
 require_relative './linsc/cross_ref'
 require_relative './linsc/csv_handlers'
@@ -12,6 +13,25 @@ require_relative './linsc/lin'
 
 
 module Linsc
+  # options = {:name => nil, :age => nil}
+  #
+  # parser = OptionParser.new do|opts|
+  # 	opts.banner = "Usage: years.rb [options]"
+  # 	opts.on('-n', '--name name', 'Name') do |name|
+  # 		options[:name] = name;
+  # 	end
+  #
+  # 	opts.on('-a', '--age age', 'Age') do |age|
+  # 		options[:age] = age;
+  # 	end
+  #
+  # 	opts.on('-h', '--help', 'Displays Help') do
+  # 		puts opts
+  # 		exit
+  # 	end
+  # end
+  #
+  # parser.parse!
 
   #take cmdline args for initialization
   #generate necessary files

@@ -15,6 +15,10 @@ class ProxyHandler
       last_used: Time.now - @cooldown_time, user_agent: @ua_list.shift)
       @proxies << proxy
     end
+    if @proxies.length == 0
+      puts "proxies.txt is empty! if you don't want to use any proxies, use the -n flag. see docs for more."
+      exit
+    end
 
   end
 

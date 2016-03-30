@@ -21,8 +21,7 @@ class DuckScraper
   def initialize(working_dir, input_file, output_file, options)
     @working_dir, @input_file, @output_file, @noproxy =
       working_dir, input_file, output_file, options[:noproxy]
-    @cooldown = 5
-    @proxies = ProxyHandler.new(@cooldown) unless @noproxy
+
     @headers = get_headers(@input_file)
     @headers << "Linkedin Import Status" unless @headers.include?("Linkedin Import Status")
     @headers << "Urls" unless @headers.include?("Urls")
@@ -33,7 +32,8 @@ class DuckScraper
     else
       create_file(@output_file)
     end
-
+    @cooldown = 5
+    @proxies = ProxyHandler.new(@cooldown) unless @noproxy
   end
 
   def find_profiles

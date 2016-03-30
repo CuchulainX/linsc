@@ -62,14 +62,31 @@ class Linsc
         exit
       end
     end.parse!
-    @update = @options[:update]
-    @insert = @options[:insert]
-    @noproxy = @options[:noproxy]
 
-    unless @update || @insert
-      puts "Must specify insert or update. See help for details with -h"
-      exit
+    if File.exist?(@ddg_path)
+      ids = []
+      CSV.foreach(@crossref_path, headers: true) do |row|
+        ids << row['Contact ID']
+      end
+      if ids.include?(nil) || ids.include?("")
+        @options[:insert] = true
+      else
+        @options[:insert] = false
+      end
+      if ids.any?{|id| id && id&.length > 0}
+        @options[:update] = true
+      else
+        @options[:update] = false
+      end
+      puts "\nResuming previous scraping. insert: #{@options[:insert]}, update: #{@options[:update]}, using proxies? #{!@options[:noproxy]}"
+    else
+      unless @options[:update] || @options[:insert]
+        puts "Must specify insert or update. See help for details with -h"
+        exit
+      end
+      puts "\nStarting new project. insert: #{@options[:insert]}, update: #{@options[:update]}, using proxies? #{!@options[:noproxy]}"
     end
+
     merge unless File.exist?(@ddg_path)
     crossref unless File.exist?(@ddg_path)
     duck

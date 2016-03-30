@@ -118,7 +118,7 @@ class LinScraper
     email = input_row["Email"]
     lin_profile = input_row["Linkedin Profile"]
     cand_id = input_row["Candidate ID"]
-    cand_source = input_row["Candidate Source"]
+    cand_source = input_row["LIN 1st Degree"]
     title = page.at_css(".headline.title")&.text
     country = page.at_css("#demographics .locality")&.text
     sector = page.at_css("#demographics .descriptor:not(.adr)")&.text

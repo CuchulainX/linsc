@@ -22,17 +22,14 @@ require_relative 'csv_handlers'
 class CrossRef
   include CSVHandlers
 
-  def initialize(input_dir:, child_path:, master_path:, output_name: 'crossref',
+  def initialize(input_dir:, child_path:, master_path:, output_path:,
                  master_lookup_field: 'Email', child_lookup_field: 'Email',
-                 master_secondary_lookups: ['Email 2', 'Email 3'], static_values: {'Account Name' => 'Candidates'})
-    @input_dir = input_dir
-    @child_path = child_path
-    @master_path = master_path
-    @output_file = "#{@input_dir}#{output_name}.csv"
-    @master_lookup_field = master_lookup_field
-    @child_lookup_field = child_lookup_field
-    @master_secondary_lookups = master_secondary_lookups
-    @static_values = static_values
+                 master_secondary_lookups: ['Email 2', 'Email 3'],
+                 static_values: {'Account Name' => 'Candidates'}, options:)
+    @input_dir, @child_path, @master_path, @output_path, @options =
+      input_dir, child_path, master_path, output_path, options
+    @master_lookup_field, @child_lookup_field, @master_secondary_lookups, @static_values =
+      master_lookup_field, child_lookup_field, master_secondary_lookups, static_values
     @headers = get_headers(@master_path)
     @child_headers = get_headers(@child_path)
     @child_headers.each do |child_header|
@@ -45,7 +42,11 @@ class CrossRef
         @headers << static_key
       end
     end
-    create_file(@output_file)
+    @child_length = %x(wc -l "#{@child_path}").split[0].to_i - 1
+    if File.exist?(@output_path)
+      File.delete(@output_path)
+    end
+    create_file(@output_path)
     cross_ref
   end
 
@@ -53,7 +54,6 @@ class CrossRef
     master_data = CSV.read(@master_path, headers: true)
     puts "sorting lookup values"
     master_data = master_data.sort do |x, y|
-      # turns out the debugging I/O was by far the most costly part of this sort
       a = x[@master_lookup_field]
       b = y[@master_lookup_field]
       a && b ? a <=> b : a ? -1 : 1
@@ -62,7 +62,7 @@ class CrossRef
     i = 0
     CSV.foreach(@child_path, headers: true, encoding: 'utf-8') do |child_row|
       i += 1
-      puts "child row: #{i}"
+      puts "email lookup - row: #{i}/#{@child_length}"
       child_lookup_value = child_row[@child_lookup_field]&.downcase
       if child_lookup_value&.include?('@') ## generalize this
         match_index = master_lookup_values.bsearch_index do |master_lookup_value|
@@ -76,9 +76,9 @@ class CrossRef
           end
         end
         if match_index
-          append_to_csv(@output_file, splice_rows(master_data[match_index], child_row))
+          append_to_csv(@output_path, splice_rows(master_data[match_index], child_row)) if @options[:update]
         else
-          append_to_csv(@output_file, convert_row(child_row))
+          append_to_csv(@output_path, convert_row(child_row)) if @options[:insert]
         end
       else
         puts "missing lookup value"

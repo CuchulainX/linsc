@@ -1,10 +1,11 @@
 #require "linsc/version"
 
 require 'mechanize'
+require 'i18n'
 require 'fileutils'
 require 'csv'
-require 'i18n'
 require 'optparse'
+require 'pathname'
 require_relative './linsc/merger'
 require_relative './linsc/cross_ref'
 require_relative './linsc/csv_handlers'
@@ -12,65 +13,72 @@ require_relative './linsc/duck'
 require_relative './linsc/lin'
 
 
-module Linsc
-  # options = {:name => nil, :age => nil}
-  #
-  # parser = OptionParser.new do|opts|
-  # 	opts.banner = "Usage: years.rb [options]"
-  # 	opts.on('-n', '--name name', 'Name') do |name|
-  # 		options[:name] = name;
-  # 	end
-  #
-  # 	opts.on('-a', '--age age', 'Age') do |age|
-  # 		options[:age] = age;
-  # 	end
-  #
-  # 	opts.on('-h', '--help', 'Displays Help') do
-  # 		puts opts
-  # 		exit
-  # 	end
-  # end
-  #
-  # parser.parse!
+class Linsc
 
-  #take cmdline args for initialization
-  #generate necessary files
-  #initialize proxy handler
-  #steps: 1) merge lin export csvs into one, ensuring correct encoding
-  # =>        and priority ordering recruiters
-  # =>    2) cross reference lin data with salesforce report to check which
-  # =>        contact are new vs old, and get support data for old
-  # =>    3) run data through ddg to get candidate profiles
-  # =>    4) visit each candidate profile and validate
-  # =>    5) if profile is correct, parse and create new csv row
-  # =>        (no need to save profile page locally)
+  def merge
+    merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
+                  'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
+                  'Recruiter' => 'LIN 1st Degree'}
+    Merger.new(@working_dir, @merge_path, merge_map).merge
+  end
 
-  #likely classes: Linsc - responsible for initializing other classes
-  # =>             Proxy - individual proxy
-  # =>             ProxyHandler - this is what other classes call when they
-  # =>                            need a proxy returned, manage burnout
-  # =>             ddgscraper/linscraper?
-  # =>             LinRow,SFRow,DDGRow etc, basically as wrappers around
-  # =>              the CSV::Row objects used in each case, easier field access
+  def crossref
+     CrossRef.new(input_dir: @working_dir, child_path: @merge_path,
+     master_path: @sf_path, output_path: @crossref_path, options: @options)
+  end
+
+  def duck
+    DuckScraper.new(@working_dir, @crossref_path, @ddg_path, @options).find_profiles
+  end
+
+  def lin
+    LinScraper.new(@working_dir, @ddg_path, @options).start
+  end
+
+  def initialize
+    @options = {:noproxy => false, :update => false, :insert => false}
+    @working_dir = '../input/sample/'
+    @merge_path = "#{@working_dir}merged.csv"
+    @sf_path = "#{@working_dir}sf_ref.csv"
+    @crossref_path = "#{@working_dir}crossref.csv"
+    @ddg_path = "#{@working_dir}ddg.csv"
+
+    parser = OptionParser.new do|opts|
+      opts.banner = "Must specify update or insert (or both)"
+      opts.on('-u', '--update', 'Tell scraper to fetch fresh data for existing Salesforce records') do
+        @options[:update] = true;
+      end
+
+      opts.on('-i', '--insert', 'Tell scraper to fetch data for new connections not yet in Salesforce') do
+        @options[:insert] = true;
+      end
+
+      opts.on('-n', '--noproxy', 'Do not use any proxies') do
+        @options[:noproxy] = true;
+      end
+
+      opts.on('-h', '--help', 'Displays Help') do
+        puts opts
+        exit
+      end
+    end.parse!
+    @update = @options[:update]
+    @insert = @options[:insert]
+    @noproxy = @options[:noproxy]
+
+    unless @update || @insert
+      puts "Must specify insert or update. See help for details with -h"
+      exit
+    end
+    merge unless File.exist?(@ddg_path)
+    crossref unless File.exist?(@ddg_path)
+    duck
+    lin
 
 
+
+  end
 
 end
 
-def bootstrap
- #  merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
- #               'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
- #               'Recruiter' => 'LIN 1st Degree'}
- #
- working_dir = '../input/full/'
- #  merger = Merger.new(working_dir, 'merged_utf4.csv', merge_map)
- #  merged = merger.merge
- #  crossref = CrossRef.new(input_dir: working_dir, child_path: "#{working_dir}merged_utf4.csv",
- #  master_path: "#{working_dir}sf_ref2.csv", output_name: 'crossref_generic2')
-  # DuckScraper.new(working_dir, 'crossref_generic2', 'ddg_results2').find_profiles
-  LinScraper.new(working_dir, 'ddg_results2').start
-
-
-end
-
-bootstrap
+Linsc.new

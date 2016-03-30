@@ -18,16 +18,22 @@ class DuckScraper
 
   include CSVHandlers
 
-  def initialize(working_dir, input_file, output_file)
-    @working_dir = working_dir
-    @input_file = "#{working_dir}#{input_file}.csv"
-    @output_file = "#{working_dir}#{output_file}.csv"
-    @proxies = ProxyHandler.new(5)
+  def initialize(working_dir, input_file, output_file, options)
+    @working_dir, @input_file, @output_file, @noproxy =
+      working_dir, input_file, output_file, options[:noproxy]
+    @cooldown = 5
+    @proxies = ProxyHandler.new(@cooldown) unless @noproxy
     @headers = get_headers(@input_file)
     @headers << "Linkedin Import Status" unless @headers.include?("Linkedin Import Status")
     @headers << "Urls" unless @headers.include?("Urls")
     @input_length = %x(wc -l "#{@input_file}").split[0].to_i - 1
-    create_file(@output_file)
+    if File.exist?(@output_file)
+      @start = CSV.read(@output_file, headers: true).length
+      puts @start
+    else
+      create_file(@output_file)
+    end
+
   end
 
   def find_profiles
@@ -35,7 +41,8 @@ class DuckScraper
 
     CSV.foreach(@input_file, headers: true) do |input_row|
       count += 1
-      tries = @proxies.length
+      next if @start && @start >= count
+      tries = @proxies&.length || 3
       puts "ddg #{count}/#{@input_length}"
       begin
         unless sufficient_data?(input_row)
@@ -43,12 +50,15 @@ class DuckScraper
           append_ddg_row(input_row, "Insufficient Data", nil)
           next
         end
-
-        proxy = @proxies.get_proxy
-        puts "proxy: #{proxy.ip}"
         agent = Mechanize.new
-        agent.set_proxy(proxy.ip, proxy.port, proxy.username, proxy.password)
-        agent.user_agent = proxy.user_agent
+
+        unless @noproxy
+          proxy = @proxies.get_proxy
+          agent.set_proxy(proxy.ip, proxy.port, proxy.username, proxy.password)
+          agent.user_agent = proxy.user_agent
+          puts "proxy: #{proxy.ip}"
+        end
+        sleep(@cooldown) if @noproxy
         query_string = create_query(input_row)
         puts "query string: #{query_string}"
         ddg_page = agent.get('https://www.duckduckgo.com/html')
@@ -63,16 +73,16 @@ class DuckScraper
           puts "no results found"
           append_ddg_row(input_row, "No DDG results found", nil)
         end
-        proxy.good
+        proxy.good if proxy
 
-      rescue Exception => msg
+      rescue StandardError => msg
         tries -= 1
         if tries > 0
           puts "\n\n"
           puts msg
           puts 'RETRYING'
           puts "\n\n"
-          proxy.used
+          proxy.used if proxy
           retry
         else
           append_ddg_row(input_row, msg, nil)

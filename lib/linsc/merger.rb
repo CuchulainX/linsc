@@ -4,23 +4,25 @@ require_relative 'csv_handlers'
 class Merger
   include CSVHandlers
 
-  def initialize(input_dir, output_name, mapping = nil)
-    @input_dir = input_dir
-    @output_file = "#{@input_dir}#{output_name}"
+  def initialize(input_dir, output_path, mapping = nil)
+    @input_dir, @output_path, @mapping = input_dir, output_path, mapping
     @recruiters = File.read('./../data/recruiters.txt').split(",").collect{|r| r.strip}
-    @mapping = mapping
     if mapping
       @headers = mapping.values
     else
       @headers = get_headers(Dir.glob("#{@input_dir}LIN*.csv").first)
     end
+    if File.exist?(@output_path)
+      File.delete(@output_path)
+    end
+    create_file(@output_path)
   end
 
   def construct_emails_hash
     emails = {}
     Dir.glob("#{@input_dir}LIN*.csv") do |lin_file|
       recruiter_name = lin_file.match(/LIN[^.]+/)[0]
-      puts "parsing #{recruiter_name}"
+      puts "merging #{recruiter_name}"
       clean_file = File.read(lin_file, encoding: 'windows-1252').strip
       CSV.parse(clean_file, headers: true, encoding: 'windows-1252') do |row|
         row["Recruiter"] = recruiter_name
@@ -37,12 +39,11 @@ class Merger
 
   def merge
     emails = construct_emails_hash
-    create_file(@output_file)
     i = 0
     j = emails.length
     emails.each do |ek, ev|
       i += 1
-      puts "row #{i}/#{j}"
+      puts "merging - row #{i}/#{j}"
       correct_row = ev.find do |row|
         row['Recruiter'] == @recruiters.find do |rec|
            ev.collect {|row| row['Recruiter']}.include?(rec)
@@ -59,8 +60,8 @@ class Merger
       else
         output_row = create_row(correct_row, @headers, 'utf-8')
       end
-      append_to_csv(@output_file, output_row)
+      append_to_csv(@output_path, output_row)
     end
-    @output_file
+    @output_path
   end
 end

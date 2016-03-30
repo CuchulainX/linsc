@@ -45,14 +45,15 @@ end
 class LinScraper
   include CSVHandlers
 
-  def initialize(working_dir, input_file)
-    @working_dir = working_dir
-    @input_file = "#{working_dir}#{input_file}.csv"
-    @output_update = "#{working_dir}contact_update2.csv"
-    @output_insert = "#{working_dir}contact_insert2.csv"
-    @output_employment = "#{working_dir}contact_employment.csv"
-    @output_education = "#{working_dir}contact_education.csv"
-    @proxies = ProxyHandler.new(20)
+  def initialize(working_dir, input_file, options)
+    @working_dir, @input_file, @options = working_dir, input_file, options
+    @output_update = "#{@working_dir}contact_update.csv" if @options[:update]
+    @output_insert = "#{@working_dir}contact_insert.csv" if @options[:insert]
+    @output_employment = "#{@working_dir}contact_employment.csv"
+    @output_education = "#{@working_dir}contact_education.csv"
+    @cooldown = 20
+    @noproxy = options[:noproxy]
+    @proxies = ProxyHandler.new(@cooldown) unless @options[:noproxy]
     @headers = get_headers(@input_file)
     @new_headers = ["Contact ID", "CV TR", "Account Name", "Linkedin Import Status", "First Name", "Last Name", "Email", "LinkedIn Profile", "Candidate ID",
             "LIN 1st Degree", "Title", "Contact Country", "Contact LIN Sector", "Resume Last Updated", "LIN Import Date", "CV Uploaded",
@@ -75,8 +76,23 @@ class LinScraper
     @education_headers = ["Contact", "School Name", "Major", "Graduation Year"]
     @input_length = %x(wc -l "#{@input_file}").split[0].to_i - 1
     I18n.available_locales = [:en]
+    if (@output_update && File.exist?(@output_update)) || (@output_insert && File.exist?(@output_insert))
+      if @output_update
+        update_length = CSV.read(@output_update, headers: true).length
+      else
+        update_length = 0
+      end
+      if @output_insert
+        insert_length = CSV.read(@output_insert, headers: true).length
+      else
+        insert_length = 0
+      end
+      @start = update_length + insert_length
+    end
     [@output_insert, @output_update, @output_education, @output_employment].each do |file|
-      create_file(file)
+      if file
+        create_file(file) unless File.exist?(file)
+      end
     end
   end
 
@@ -363,11 +379,15 @@ class LinScraper
     row["CV Uploaded"] = "1"
 
     if mode == 'update'
-      puts "outputting update"
-      append_to_csv(@output_update, row)
+      if @options[:update]
+        puts "outputting update"
+        append_to_csv(@output_update, row)
+      end
     elsif mode == 'insert'
-      puts "outputting insert"
-      append_to_csv(@output_insert, row)
+      if @options[:insert]
+        puts "outputting insert"
+        append_to_csv(@output_insert, row)
+      end
     end
 
   end
@@ -423,12 +443,15 @@ class LinScraper
   def validate(url, row)
     puts "url: #{url}"
     begin
-      proxy = @proxies.get_proxy
-      puts "proxy: #{proxy.ip}"
       agent = Mechanize.new
-      agent.set_proxy(proxy.ip, proxy.port, proxy.username, proxy.password) unless proxy.ip == 'self'
-      agent.user_agent = proxy.user_agent unless proxy.ip == 'self'
 
+      unless @noproxy
+        proxy = @proxies.get_proxy
+        agent.set_proxy(proxy.ip, proxy.port, proxy.username, proxy.password)
+        agent.user_agent = proxy.user_agent
+        puts "proxy: #{proxy.ip}"
+      end
+      sleep(@cooldown) if @noproxy
       page = agent.get(url)
       puts 'ACCESS GRANTED'
 
@@ -448,23 +471,23 @@ class LinScraper
           end
         end
       end
-      proxy.good
+      proxy.good if proxy
       if match
         return [url, page]
       else
         return false
       end
-    rescue Exception => e
+    rescue StandardError => e
       puts e
       if e.to_s.start_with?('999')
-        proxy.dead
+        proxy.dead if proxy
         retry
       elsif e.to_s.start_with?('404') || e.to_s.start_with?('403')
-        proxy.good
+        proxy.good if proxy
         return false
       else
         puts e.backtrace
-        proxy.used
+        proxy.used if proxy
         retry
       end
     end
@@ -474,8 +497,8 @@ class LinScraper
     count = 0
     CSV.foreach(@input_file, headers: true) do |input_row|
       count += 1
-      next if count < 0
-      tries = @proxies.length
+      next if @start && @start >= count
+      tries = @proxies.length unless @noproxy
       puts "lin #{count}/#{@input_length}"
       # begin
         urls = input_row['Urls']
@@ -492,14 +515,14 @@ class LinScraper
             input_row["Linkedin Import Status"] = 'Profile imported'
             input_row.delete('Urls')
             if input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
-              scrape_contact(input_row, correct_page, 'update')
+              scrape_contact(input_row, correct_page, 'update') if @options[:update]
             else
-              scrape_contact(input_row, correct_page, 'insert')
+              scrape_contact(input_row, correct_page, 'insert') if @options[:insert]
             end
             # scrape_employment(input_row, correct_page)
             # scrape_education(input_row, correct_page)
           else
-            if input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
+            if @options[:update] && input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
@@ -507,7 +530,7 @@ class LinScraper
               puts "outputting update"
               puts input_row["Linkedin Import Status"]
               append_to_csv(@output_update, output_row)
-            else
+            elsif @options [:insert]
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
@@ -518,14 +541,14 @@ class LinScraper
             end
           end
         else
-          if input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
+          if @options[:update] && input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
             puts "outputting update"
             puts input_row["Linkedin Import Status"]
             output_row = create_row(input_row, @headers)
             append_to_csv(@output_update, output_row)
-          else
+          elsif @options [:insert]
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
             puts "outputting insert"

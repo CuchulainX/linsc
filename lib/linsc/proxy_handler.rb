@@ -4,9 +4,8 @@ class ProxyHandler
 
   def initialize(cooldown_time = 5)
     @cooldown_time = cooldown_time
-    # @proxy_list = File.read('./../data/proxies.txt').split("\n")
-    # .collect{|proxy| proxy.split(':')}
-    @proxy_list = [['self']]
+    @proxy_list = File.read('./../data/proxies.txt').split("\n")
+    .collect{|proxy| proxy.split(':')}
     @proxies = []
     @ua_list = File.read('./../data/agents.txt').split("\n")
 

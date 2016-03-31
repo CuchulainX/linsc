@@ -53,11 +53,11 @@ class Linsc
 
   def initialize
     @options = {:noproxy => false, :update => false, :insert => false}
-    @working_dir = '../input/sample/'
-    @merge_path = "#{@working_dir}merged.csv"
-    @sf_path = "#{@working_dir}sf_ref.csv"
-    @crossref_path = "#{@working_dir}crossref.csv"
-    @ddg_path = "#{@working_dir}ddg.csv"
+    @working_dir = Pathname.pwd
+    @merge_path = @working_dir + 'merged.csv'
+    @sf_path = @working_dir + 'sf_ref.csv'
+    @crossref_path = @working_dir + 'crossref.csv'
+    @ddg_path = @working_dir + 'ddg.csv'
 
     parser = OptionParser.new do|opts|
       opts.banner = "Must specify update or insert (or both)"
@@ -84,7 +84,7 @@ class Linsc
     end.parse!
 
     required_sf_fields = ['LIN ID', 'Email', 'Contact ID']
-    sf_headers = get_headers("#{@working_dir}sf_ref.csv")
+    sf_headers = get_headers(@sf_path)
     required_sf_fields.each do |field|
       unless sf_headers.include?(field)
         puts "The SF reference sheet must include the #{field} field."
@@ -121,10 +121,6 @@ class Linsc
     duck
     lin
 
-
-
   end
 
 end
-
-Linsc.new

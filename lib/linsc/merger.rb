@@ -6,11 +6,16 @@ class Merger
 
   def initialize(input_dir, output_path, mapping = nil)
     @input_dir, @output_path, @mapping = input_dir, output_path, mapping
-    @recruiters = File.read('./../data/recruiters.txt').split(",").collect{|r| r.strip}
+    p @input_dir
+    recruiter_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/recruiters.txt'
+    p recruiter_file
+    @recruiters = recruiter_file.read.split(",").collect{|r| r.strip}
+    @lin_files = @input_dir.children.select{|fn| fn.to_s.match(/LIN.+\.csv/)}
+    p @lin_files
     if mapping
       @headers = mapping.values
     else
-      @headers = get_headers(Dir.glob("#{@input_dir}LIN*.csv").first)
+      @headers = get_headers(@lin_files.first)
     end
     if File.exist?(@output_path)
       File.delete(@output_path)
@@ -20,7 +25,8 @@ class Merger
 
   def construct_emails_hash
     emails = {}
-    Dir.glob("#{@input_dir}LIN*.csv") do |lin_file|
+    @lin_files.each do |pn|
+      lin_file = pn.to_s
       recruiter_name = lin_file.match(/LIN[^.]+/)[0]
       puts "merging #{recruiter_name}"
       clean_file = File.read(lin_file, encoding: 'windows-1252').strip

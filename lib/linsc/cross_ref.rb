@@ -1,4 +1,5 @@
 require_relative 'csv_handlers'
+require 'securerandom'
 
 # refactoring notes:
 # this class should provide general functionality, and not rely on specifics of
@@ -21,6 +22,7 @@ require_relative 'csv_handlers'
 
 class CrossRef
   include CSVHandlers
+  include SecureRandom
 
   def initialize(input_dir:, child_path:, master_path:, output_path:,
                  master_lookup_field: 'Email', child_lookup_field: 'Email',
@@ -31,6 +33,7 @@ class CrossRef
     @master_lookup_field, @child_lookup_field, @master_secondary_lookups, @static_values =
       master_lookup_field, child_lookup_field, master_secondary_lookups, static_values
     @headers = get_headers(@master_path)
+    child_lookup_field == 'Email' ? @email_key = true : @email_key = false
     @child_headers = get_headers(@child_path)
     @child_headers.each do |child_header|
       unless @headers.include?(child_header)
@@ -41,7 +44,7 @@ class CrossRef
       unless @headers.include?(static_key)
         @headers << static_key
       end
-    end
+    end if @static_values
     @child_length = %x(wc -l "#{@child_path}").split[0].to_i - 1
     if File.exist?(@output_path)
       File.delete(@output_path)
@@ -64,7 +67,7 @@ class CrossRef
       i += 1
       puts "email lookup - row: #{i}/#{@child_length}"
       child_lookup_value = child_row[@child_lookup_field]&.downcase
-      if child_lookup_value&.include?('@') ## generalize this
+      if child_lookup_value&.include?('@') || !@email_key ## generalize this
         match_index = master_lookup_values.bsearch_index do |master_lookup_value|
            child_lookup_value && master_lookup_value ?
                 child_lookup_value <=> master_lookup_value : child_lookup_value ? -1 : 1
@@ -76,9 +79,13 @@ class CrossRef
           end
         end
         if match_index
-          append_to_csv(@output_path, splice_rows(master_data[match_index], child_row)) if @options[:update]
+          if @options[:update]
+            append_to_csv(@output_path, splice_rows(master_data[match_index], child_row))
+          end
         else
-          append_to_csv(@output_path, convert_row(child_row)) if @options[:insert]
+          if @options[:insert]
+            append_to_csv(@output_path, convert_row(child_row))
+          end
         end
       else
         puts "missing lookup value"
@@ -87,6 +94,10 @@ class CrossRef
   end
 
   def splice_rows(master_row, child_row)
+    unless master_row['LIN ID'] && master_row['LIN ID'].strip.length > 20
+      master_row['LIN ID'] = SecureRandom.hex(16)
+    end
+
     child_row.each do |child_key, child_value|
       if child_value && child_value.strip.length > 0
         if master_row.has_key?(child_key)
@@ -109,6 +120,7 @@ class CrossRef
 
   def convert_row(child_row)
     master_row = CSV::Row.new(@headers, [])
+    master_row['LIN ID'] = SecureRandom.hex(16)
     child_row.each do |child_key, child_value|
       master_row[child_key] = child_value if master_row.has_key?(child_key)
     end

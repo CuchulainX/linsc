@@ -14,6 +14,7 @@ require_relative './linsc/lin'
 
 
 class Linsc
+  include CSVHandlers
 
   def merge
     merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
@@ -33,6 +34,21 @@ class Linsc
 
   def lin
     LinScraper.new(@working_dir, @ddg_path, @options).start
+  end
+
+  def map_history_ids
+    puts "Mapping ids to history"
+    CrossRef.new(input_dir: @working_dir, child_path: "#{@working_dir}contact_employment_insert.csv",
+    master_path: "#{@working_dir}history_ref.csv", output_path: "#{@working_dir}contact_employment_insert_with_ids.csv",
+    options: {:noproxy => false, :update => true, :insert => false},
+    master_lookup_field: 'LIN ID', child_lookup_field: 'LIN ID',
+    master_secondary_lookups: nil, static_values: nil)
+    CrossRef.new(input_dir: @working_dir, child_path: "#{@working_dir}contact_education_insert.csv",
+    master_path: "#{@working_dir}history_ref.csv", output_path: "#{@working_dir}contact_education_insert_with_ids.csv",
+    options: {:noproxy => false, :update => true, :insert => false},
+    master_lookup_field: 'LIN ID', child_lookup_field: 'LIN ID',
+    master_secondary_lookups: nil, static_values: nil)
+    exit
   end
 
   def initialize
@@ -57,11 +73,24 @@ class Linsc
         @options[:noproxy] = true;
       end
 
+      opts.on('-e', '--history', 'Map Contact IDs to education/employment histories for new connections') do
+        map_history_ids
+      end
+
       opts.on('-h', '--help', 'Displays Help') do
         puts opts
         exit
       end
     end.parse!
+
+    required_sf_fields = ['LIN ID', 'Email', 'Contact ID']
+    sf_headers = get_headers("#{@working_dir}sf_ref.csv")
+    required_sf_fields.each do |field|
+      unless sf_headers.include?(field)
+        puts "The SF reference sheet must include the #{field} field."
+        exit
+      end
+    end
 
     if File.exist?(@ddg_path)
       ids = []

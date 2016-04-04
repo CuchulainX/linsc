@@ -8,7 +8,7 @@ class Merger
     @input_dir, @output_path, @mapping = input_dir, output_path, mapping
     recruiter_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/recruiters.txt'
     @recruiters = recruiter_file.read.split(",").collect{|r| r.strip}
-    @lin_files = @input_dir.children.select{|fn| fn.to_s.match(/^LIN.+\.csv/)}
+    @lin_files = @input_dir.children.select{|fn| fn.basename.to_s.match(/^LIN.+\.csv/)}
     if mapping
       @headers = mapping.values
     else

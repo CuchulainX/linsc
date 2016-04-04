@@ -135,7 +135,7 @@ class Linsc
       else
         @options[:insert] = false
       end
-      if ids.any?{|id| id && id&.length > 0}
+      if ids.any?{|id| id && id.length > 0}
         @options[:update] = true
       else
         @options[:update] = false

@@ -42,20 +42,20 @@ class CrossRef
       b = y[@master_lookup_field]
       a && b ? a <=> b : a ? -1 : 1
     end
-    master_lookup_values = master_data.collect {|row| row[@master_lookup_field]&.downcase}
+    master_lookup_values = master_data.collect {|row| row[@master_lookup_field] && row[@master_lookup_field].downcase}
     i = 0
     CSV.foreach(@child_path, headers: true, encoding: 'utf-8') do |child_row|
       i += 1
       puts "email lookup - row: #{i}/#{@child_length}"
-      child_lookup_value = child_row[@child_lookup_field]&.downcase
-      if child_lookup_value&.include?('@') || !@email_key ## generalize this
+      child_lookup_value = child_row[@child_lookup_field].downcase if child_row[@child_lookup_field]
+      if (child_lookup_value && child_lookup_value.include?('@')) || !@email_key ## generalize this
         match_index = master_lookup_values.bsearch_index do |master_lookup_value|
            child_lookup_value && master_lookup_value ?
                 child_lookup_value <=> master_lookup_value : child_lookup_value ? -1 : 1
         end
         if !match_index
           match_index = master_data.find_index do |master_row|
-            master_secondary_lookups = @master_secondary_lookups.collect{|x| x&.downcase}
+            master_secondary_lookups = @master_secondary_lookups.collect{|x| x && x.downcase}
             master_secondary_lookups.include?(child_lookup_value)
           end
         end
@@ -94,7 +94,7 @@ class CrossRef
     end
     master_row_new = CSV::Row.new(@headers, [])
     master_row.each do |key, value|
-      master_row_new[key] = value&.encode('utf-8', invalid: :replace, undef: :replace, replace: '#')
+      master_row_new[key] = value.encode('utf-8', invalid: :replace, undef: :replace, replace: '#') if value
     end
     master_row_new
   end

@@ -3,7 +3,7 @@ module CSVHandlers
     values = []
     headers.each do |header|
       if encoding
-        values << row[header]&.encode(encoding)
+        values << row[header].encode(encoding) if row[header]
       else
         values << row[header]
       end
@@ -33,7 +33,7 @@ module CSVHandlers
     unless File.exist?(f)
       FileUtils.touch(f)
       csv = CSV.open(f, "w+")
-      csv << @headers.collect {|x| x&.encode('utf-8')}
+      csv << @headers.collect {|x| x && x.encode('utf-8')}
       csv.close
     end
   end
@@ -42,7 +42,7 @@ module CSVHandlers
     unless File.exist?(f)
       FileUtils.touch(f)
       csv = CSV.open(f, "w+")
-      csv << headers.collect {|x| x&.encode('utf-8')}
+      csv << headers.collect {|x| x && x.encode('utf-8')}
       csv.close
     end
   end

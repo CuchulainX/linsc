@@ -29,7 +29,7 @@ class Merger
       clean_file = File.read(lin_file, encoding: 'windows-1252').strip
       CSV.parse(clean_file, headers: true, encoding: 'windows-1252') do |row|
         row["Recruiter"] = recruiter_name
-        email = row['E-mail Address']&.downcase
+        email = row['E-mail Address'].downcase if row['E-mail Address']
         if emails.has_key?(email)
           emails[email] << row
         else
@@ -56,10 +56,10 @@ class Merger
         output_row = CSV::Row.new(@headers, [])
         correct_row.each do |key, value|
           if @mapping[key]
-            output_row[@mapping[key]] = value&.encode('utf-8')
+            output_row[@mapping[key]] = value.encode('utf-8') if value
           end
         end
-        output_row['Email'] = output_row['Email']&.downcase
+        output_row['Email'] = output_row['Email'].downcase if output_row['Email']
       else
         output_row = create_row(correct_row, @headers, 'utf-8')
       end

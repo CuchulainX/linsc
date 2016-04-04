@@ -42,7 +42,11 @@ class DuckScraper
     CSV.foreach(@input_file, headers: true) do |input_row|
       count += 1
       next if @start && @start >= count
-      tries = @proxies&.length || 3
+      if @proxies
+        tries = @proxies.length
+      else
+        tries = 3
+      end
       puts "ddg #{count}/#{@input_length}"
       begin
         unless sufficient_data?(input_row)

@@ -1,7 +1,7 @@
 module Parsers
   def scrape_contact(input_row, page, mode)
     row = CSV::Row.new(@headers, [])
-    name = page.at_css("#name")&.text&.split
+    name = page.at_css("#name").text.split
     contact_id = input_row["Contact ID"]
     lin_id = input_row["LIN ID"]
     cv_tr = input_row["CV TR"]
@@ -11,53 +11,53 @@ module Parsers
     lin_profile = input_row["Linkedin Profile"]
     cand_id = input_row["Candidate ID"]
     cand_source = input_row["LIN 1st Degree"]
-    title = page.at_css(".headline.title")&.text
-    country = page.at_css("#demographics .locality")&.text
-    sector = page.at_css("#demographics .descriptor:not(.adr)")&.text
+    title = page.at_css(".headline.title").text
+    country = page.at_css("#demographics .locality").text
+    sector = page.at_css("#demographics .descriptor:not(.adr)").text
 
     positions = page.css("#experience .positions .position")
     if positions
-      e1_title = positions[0]&.at_css(".item-title")&.text
-      e1_org = positions[0]&.at_css(".item-subtitle")&.text
-      e1_start = positions[0]&.css(".date-range time")[0]&.text
-      e1_end = positions[0]&.css(".date-range time")[1]&.text
-      e1_loc = positions[0]&.at_css(".location")&.text
-      e1_desc = positions[0]&.at_css(".description")&.text
-      e2_title = positions[1]&.at_css(".item-title")&.text
-      e2_org = positions[1]&.at_css(".item-subtitle")&.text
-      e2_start = positions[1]&.css(".date-range time")[0]&.text
-      e2_end = positions[1]&.css(".date-range time")[1]&.text
-      e2_loc = positions[1]&.at_css(".location")&.text
-      e2_desc = positions[1]&.at_css(".description")&.text
-      e3_title = positions[2]&.at_css(".item-title")&.text
-      e3_org = positions[2]&.at_css(".item-subtitle")&.text
-      e3_start = positions[2]&.css(".date-range time")[0]&.text
-      e3_end = positions[2]&.css(".date-range time")[1]&.text
-      e3_loc = positions[2]&.at_css(".location")&.text
-      e3_desc = positions[2]&.at_css(".description")&.text
+      e1_title = positions[0].at_css(".item-title").text
+      e1_org = positions[0].at_css(".item-subtitle").text
+      e1_start = positions[0].css(".date-range time")[0].text
+      e1_end = positions[0].css(".date-range time")[1].text
+      e1_loc = positions[0].at_css(".location").text
+      e1_desc = positions[0].at_css(".description").text
+      e2_title = positions[1].at_css(".item-title").text
+      e2_org = positions[1].at_css(".item-subtitle").text
+      e2_start = positions[1].css(".date-range time")[0].text
+      e2_end = positions[1].css(".date-range time")[1].text
+      e2_loc = positions[1].at_css(".location").text
+      e2_desc = positions[1].at_css(".description").text
+      e3_title = positions[2].at_css(".item-title").text
+      e3_org = positions[2].at_css(".item-subtitle").text
+      e3_start = positions[2].css(".date-range time")[0].text
+      e3_end = positions[2].css(".date-range time")[1].text
+      e3_loc = positions[2].at_css(".location").text
+      e3_desc = positions[2].at_css(".description").text
     end
 
     certs = page.css(".certifications .certification")
     if certs
-      c1_name = certs[0]&.at_css(".item-title")&.text
-      c2_name = certs[1]&.at_css(".item-title")&.text
-      c_type  = certs[0]&.at_css(".item-subtitle")&.text
+      c1_name = certs[0].at_css(".item-title").text
+      c2_name = certs[1].at_css(".item-title").text
+      c_type  = certs[0].at_css(".item-subtitle").text
     end
 
     schools = page.css("#education .schools .school")
     if schools
-      s1_name = schools[0]&.at_css(".item-title")&.text
-      s2_name = schools[1]&.at_css(".item-title")&.text
-      s1_start = schools[0]&.css(".date-range time")[0]&.text
-      s2_start = schools[1]&.css(".date-range time")[0]&.text
-      s1_end = schools[0]&.css(".date-range time")[1]&.text
-      s2_end = schools[1]&.css(".date-range time")[1]&.text
-      s1_degree = schools[0]&.at_css(".item-subtitle")&.text
-      s2_degree = schools[1]&.at_css(".item-subtitle")&.text
+      s1_name = schools[0].at_css(".item-title").text
+      s2_name = schools[1].at_css(".item-title").text
+      s1_start = schools[0].css(".date-range time")[0].text
+      s2_start = schools[1].css(".date-range time")[0].text
+      s1_end = schools[0].css(".date-range time")[1].text
+      s2_end = schools[1].css(".date-range time")[1].text
+      s1_degree = schools[0].at_css(".item-subtitle").text
+      s2_degree = schools[1].at_css(".item-subtitle").text
     end
 
     summary = page.at_css("#summary .description")
-    summary&.css('br').each{|br| br.replace "\n"} if summary
+    summary.css('br').each{|br| br.replace "\n"} if summary
 
     text_resume = "\n\n***IMPORTED FROM LINKEDIN***\n#{lin_profile}\n\n"
     text_resume += name.join(" ")
@@ -105,7 +105,7 @@ module Parsers
     text_resume += "\nINTERESTS\n" if interests && interests.length > 0
     ints = []
     interests.each do |interest|
-      int = interest.at_css(".wrap")&.text
+      int = interest.at_css(".wrap").text
       if int
         ints << int unless (int == "See less") || (int.match(/See \d+\+/))
       end
@@ -115,7 +115,7 @@ module Parsers
     text_resume += "\n\nSKILLS\n" if skills && skills.length > 0
     sks = []
     skills.each do |skill|
-      sk = skill.at_css(".wrap")&.text
+      sk = skill.at_css(".wrap").text
       if sk
         sks << sk unless (sk == "See less") || (sk.match(/See \d+\+/))
       end
@@ -125,7 +125,7 @@ module Parsers
     text_resume += "\n\nLANGUAGES\n" if languages.length > 0
     langs = []
     languages.each do |language|
-      lang = language.at_css(".name")&.text
+      lang = language.at_css(".name").text
       prof = language.at_css(".proficiency")
       lang += " (#{prof.text})" if prof && prof.text.length > 0
       langs << lang if lang
@@ -230,43 +230,43 @@ module Parsers
     row["CV TR"] = "1"
     row["Account Name"] = acc_name
     row["Linkedin Import Status"] = import_status
-    row["First Name"] = name[0]&.slice(0, 39)
-    row["Last Name"] = name[1..-1]&.join(" ")&.slice(0, 79)
+    row["First Name"] = name[0].slice(0, 39)
+    row["Last Name"] = name[1..-1].join(" ").slice(0, 79)
     row["Email"] = email
     row["Candidate ID"] = cand_id
     row["LIN 1st Degree"] = cand_source
-    row["Title"] = title&.slice(0, 127)
+    row["Title"] = title.slice(0, 127)
     row["Contact Country"] = country
-    row["Contact LIN Sector"] = sector&.slice(0, 99)
-    row["Employer 1 Title"] = e1_title&.slice(0, 31999)
-    row["Employer Organization Name 1"] = e1_org&.slice(0, 254)
+    row["Contact LIN Sector"] = sector.slice(0, 99)
+    row["Employer 1 Title"] = e1_title.slice(0, 31999)
+    row["Employer Organization Name 1"] = e1_org.slice(0, 254)
     row["Employer 1 Start Date"] = format_date(e1_start) #format
     row["Employer 1 End Date"] = format_date(e1_end) #format
-    row["Employer 1 Location"] = e1_loc&.slice(0, 254)
-    row["Employer 1 Description"] = e1_desc&.slice(0, 31999)
-    row["Employer 2 Title"] = e2_title&.slice(0, 31999)
-    row["Employer Organization Name 2"] = e2_org&.slice(0, 254)
+    row["Employer 1 Location"] = e1_loc.slice(0, 254)
+    row["Employer 1 Description"] = e1_desc.slice(0, 31999)
+    row["Employer 2 Title"] = e2_title.slice(0, 31999)
+    row["Employer Organization Name 2"] = e2_org.slice(0, 254)
     row["Employer 2 Start Date"] = format_date(e2_start) #format
     row["Employer 2 End Date"] = format_date(e2_end) #format
-    row["Employer 2 Location"] = e2_loc&.slice(0, 254)
-    row["Employer 2 Description"] = e2_desc&.slice(0, 31999)
-    row["Employer 3 Title"] = e3_title&.slice(0, 31999)
-    row["Employer Organization Name 3"] = e3_org&.slice(0, 254)
+    row["Employer 2 Location"] = e2_loc.slice(0, 254)
+    row["Employer 2 Description"] = e2_desc.slice(0, 31999)
+    row["Employer 3 Title"] = e3_title.slice(0, 31999)
+    row["Employer Organization Name 3"] = e3_org.slice(0, 254)
     row["Employer 3 Start Date"] = format_date(e3_start) #format
     row["Employer 3 End Date"] = format_date(e3_end) #format
-    row["Employer 3 Location"] = e3_loc&.slice(0, 254)
-    row["Employer 3 Description"] = e3_desc&.slice(0, 31999)
-    row["License or Certification Name 1"] = c1_name&.slice(0, 254)
-    row["License or Certification Name 2"] = c2_name&.slice(0, 254)
-    row["License or Certification Credential Type"] = c_type&.slice(0, 254)
-    row["Education School 1"] = s1_name&.slice(0, 124)
-    row["Education Degree Name 1"] = s1_degree&.slice(0, 254)
+    row["Employer 3 Location"] = e3_loc.slice(0, 254)
+    row["Employer 3 Description"] = e3_desc.slice(0, 31999)
+    row["License or Certification Name 1"] = c1_name.slice(0, 254)
+    row["License or Certification Name 2"] = c2_name.slice(0, 254)
+    row["License or Certification Credential Type"] = c_type.slice(0, 254)
+    row["Education School 1"] = s1_name.slice(0, 124)
+    row["Education Degree Name 1"] = s1_degree.slice(0, 254)
     row["Education Degree Date 1"] = format_date(s1_end)
-    row["Education School 2"] = s2_name&.slice(0, 124)
-    row["Education Degree Name 2"] = s2_degree&.slice(0, 254)
+    row["Education School 2"] = s2_name.slice(0, 124)
+    row["Education Degree Name 2"] = s2_degree.slice(0, 254)
     row["Education Degree Date 2"] = format_date(s2_end)
-    row["Text Resume"] = text_resume&.slice(0, 31999)
-    row["LinkedIn Profile"] = lin_profile&.slice(0, 254)
+    row["Text Resume"] = text_resume.slice(0, 31999)
+    row["LinkedIn Profile"] = lin_profile.slice(0, 254)
     row["Resume Last Updated"] = Time.now.strftime('%Y-%m-%d %H:%M:%S')
     row["LIN Import Date"] = Time.now.strftime('%Y-%m-%d')
     row["CV Uploaded"] = "1"

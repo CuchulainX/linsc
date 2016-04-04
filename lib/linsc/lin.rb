@@ -150,7 +150,7 @@ class LinScraper
   end
 
   def validate(url, row)
-    puts "url: #{url}"
+    puts "checking url: #{url}"
     begin
       agent = Mechanize.new
 
@@ -226,7 +226,6 @@ class LinScraper
             if input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
               if @options[:update]
                 new_row = scrape_contact(input_row, correct_page, 'update')
-                puts "outputting update"
                 append_to_csv(@output_update, new_row)
                 scrape_employment(input_row, correct_page).each do |emp_row|
                   append_to_csv(@output_employment_update, emp_row)
@@ -238,7 +237,6 @@ class LinScraper
             else
               if @options[:insert]
                 new_row = scrape_contact(input_row, correct_page, 'insert')
-                puts "outputting insert"
                 append_to_csv(@output_insert, new_row)
                 scrape_employment(input_row, correct_page).each do |emp_row|
                   append_to_csv(@output_employment_insert, emp_row)
@@ -248,22 +246,18 @@ class LinScraper
                 end
               end
             end
-
-
           else
             if @options[:update] && input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
               output_row = create_row(input_row, @headers)
-              puts "outputting update"
               puts input_row["Linkedin Import Status"]
               append_to_csv(@output_update, output_row)
             elsif @options [:insert]
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
-              puts "outputting insert"
               puts input_row["Linkedin Import Status"]
               output_row = create_row(input_row, @headers)
               append_to_csv(@output_insert, output_row)
@@ -273,14 +267,12 @@ class LinScraper
           if @options[:update] && input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
-            puts "outputting update"
             puts input_row["Linkedin Import Status"]
             output_row = create_row(input_row, @headers)
             append_to_csv(@output_update, output_row)
           elsif @options [:insert]
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
-            puts "outputting insert"
             puts input_row["Linkedin Import Status"]
             output_row = create_row(input_row, @headers)
             append_to_csv(@output_insert, output_row)

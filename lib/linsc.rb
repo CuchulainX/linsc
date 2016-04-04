@@ -100,9 +100,10 @@ class Linsc
         map_history_ids
       end
 
-      opts.on('-r' '--restart', 'Restart the project from beginning with the same inputs. WARNING: This will delete all scraped data.') do
+      opts.on('-r', '--restart', 'Restart the project from beginning with the same inputs. WARNING: This will delete all scraped data.') do
         if confirm_restart(true)
           restart_project
+          puts "project files deleted"
         else
           puts "exiting"
           exit

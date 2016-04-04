@@ -28,7 +28,7 @@ class DuckScraper
     @input_length = %x(wc -l "#{@input_file}").split[0].to_i - 1
     if File.exist?(@output_file)
       @start = CSV.read(@output_file, headers: true).length
-      puts @start
+      puts "resuming from row #{@start}"
     else
       create_file(@output_file)
     end
@@ -67,7 +67,7 @@ class DuckScraper
         results_page = agent.submit(search_form)
         urls = find_results(results_page, input_row)
         if urls.length > 0
-          puts "Success! #{urls}"
+          puts "Success! #{urls.length} possible urls found"
           append_ddg_row(input_row, "DDG results found", urls.join(', '))
         else
           puts "no results found"

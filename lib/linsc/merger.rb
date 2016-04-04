@@ -6,12 +6,9 @@ class Merger
 
   def initialize(input_dir, output_path, mapping = nil)
     @input_dir, @output_path, @mapping = input_dir, output_path, mapping
-    p @input_dir
     recruiter_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/recruiters.txt'
-    p recruiter_file
     @recruiters = recruiter_file.read.split(",").collect{|r| r.strip}
     @lin_files = @input_dir.children.select{|fn| fn.to_s.match(/LIN.+\.csv/)}
-    p @lin_files
     if mapping
       @headers = mapping.values
     else

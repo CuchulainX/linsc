@@ -31,7 +31,8 @@ class ProxyHandler
       sleep(@cooldown_time - duration) if duration < @cooldown_time
       best_proxy
     else
-      false
+      puts "All proxies are dead. Wait a few hours before resuming."
+      exit
     end
   end
 

@@ -12,9 +12,21 @@ module CSVHandlers
   end
 
   def append_to_csv(file, row)
-    f = CSV.open(file, "a+", headers: row.headers, force_quotes: true)
-    f << row
-    f.close
+    tries = 3
+    begin
+      f = CSV.open(file, "a+", headers: row.headers, force_quotes: true)
+      f << row
+      f.close
+    rescue
+      tries -= 1
+      if tries > 0
+        retry
+      else
+        puts "Unable to write to file #{file}"
+        puts "Make sure the file exists and is not open in any other programs and try again. If that does not work try restarting your computer, or restarting the project with the -r flag."
+        exit
+      end
+    end
   end
 
   def create_file(f)

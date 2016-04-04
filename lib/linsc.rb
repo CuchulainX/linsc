@@ -1,5 +1,3 @@
-#require "linsc/version"
-
 require 'mechanize'
 require 'i18n'
 require 'fileutils'
@@ -38,17 +36,42 @@ class Linsc
 
   def map_history_ids
     puts "Mapping ids to history"
-    CrossRef.new(input_dir: @working_dir, child_path: "#{@working_dir}contact_employment_insert.csv",
-    master_path: "#{@working_dir}history_ref.csv", output_path: "#{@working_dir}contact_employment_insert_with_ids.csv",
+    CrossRef.new(input_dir: @working_dir, child_path: @working_dir + "contact_employment_insert.csv",
+    master_path: @working_dir + "history_ref.csv", output_path: @working_dir + "contact_employment_insert_with_ids.csv",
     options: {:noproxy => false, :update => true, :insert => false},
     master_lookup_field: 'LIN ID', child_lookup_field: 'LIN ID',
     master_secondary_lookups: nil, static_values: nil)
-    CrossRef.new(input_dir: @working_dir, child_path: "#{@working_dir}contact_education_insert.csv",
-    master_path: "#{@working_dir}history_ref.csv", output_path: "#{@working_dir}contact_education_insert_with_ids.csv",
+    CrossRef.new(input_dir: @working_dir, child_path: @working_dir + "contact_education_insert.csv",
+    master_path: @working_dir + "history_ref.csv", output_path: @working_dir + "contact_education_insert_with_ids.csv",
     options: {:noproxy => false, :update => true, :insert => false},
     master_lookup_field: 'LIN ID', child_lookup_field: 'LIN ID',
     master_secondary_lookups: nil, static_values: nil)
     exit
+  end
+
+  def confirm_restart(first=true)
+    if first
+      puts "Are you sure you want to restart the project? This will delete all data except the original inputs.\n(y/n)"
+    else
+      puts "Unknown input. Please enter (y/n)"
+    end
+    input = gets.chomp
+    if input.downcase == 'y'
+      return true
+    elsif input.downcase == 'n'
+      return false
+    else
+      confirm_restart(false)
+    end
+  end
+  def restart_project
+    files = [@merge_path, @crossref_path, @ddg_path, @working_dir + "contact_update.csv",
+       @working_dir + "contact_insert.csv", @working_dir + "contact_employment_update.csv",
+        @working_dir + "contact_employment_insert.csv", @working_dir + "contact_education_update.csv",
+         @working_dir + "contact_education_insert.csv"]
+    files.each do |f|
+      File.delete(f) if File.exist?(f)
+    end
   end
 
   def initialize
@@ -75,6 +98,15 @@ class Linsc
 
       opts.on('-e', '--history', 'Map Contact IDs to education/employment histories for new connections') do
         map_history_ids
+      end
+
+      opts.on('-r' '--restart', 'Restart the project from beginning with the same inputs. WARNING: This will delete all scraped data.') do
+        if confirm_restart(true)
+          restart_project
+        else
+          puts "exiting"
+          exit
+        end
       end
 
       opts.on('-h', '--help', 'Displays Help') do

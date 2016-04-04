@@ -49,12 +49,12 @@ class LinScraper
 
   def initialize(working_dir, input_file, options)
     @working_dir, @input_file, @options = working_dir, input_file, options
-    @output_update = "#{@working_dir}contact_update.csv" if @options[:update]
-    @output_insert = "#{@working_dir}contact_insert.csv" if @options[:insert]
-    @output_employment_update = "#{@working_dir}contact_employment_update.csv" if @options[:update]
-    @output_employment_insert = "#{@working_dir}contact_employment_insert.csv" if @options[:insert]
-    @output_education_update = "#{@working_dir}contact_education_update.csv" if @options[:update]
-    @output_education_insert = "#{@working_dir}contact_education_insert.csv" if @options[:insert]
+    @output_update = @working_dir + "contact_update.csv" if @options[:update]
+    @output_insert = @working_dir + "contact_insert.csv" if @options[:insert]
+    @output_employment_update = @working_dir + "contact_employment_update.csv" if @options[:update]
+    @output_employment_insert = @working_dir + "contact_employment_insert.csv" if @options[:insert]
+    @output_education_update = @working_dir + "contact_education_update.csv" if @options[:update]
+    @output_education_insert = @working_dir + "contact_education_insert.csv" if @options[:insert]
 
     @cooldown = 20
     @noproxy = options[:noproxy]

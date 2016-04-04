@@ -281,7 +281,7 @@ module Parsers
 
     schools.each do |school|
       row = CSV::Row.new(@education_headers, [])
-      row["Contact"] = input_row["Contact ID"]
+      row["Contact ID"] = input_row["Contact ID"]
       row["LIN ID"] = input_row["LIN ID"]
       row["School Name"] = school.at_css(".item-title").text.slice(0, 149)
       row["Major"] = school.at_css(".item-subtitle").text.slice(0, 254)
@@ -303,7 +303,7 @@ module Parsers
 
     positions.each do |position|
       row = CSV::Row.new(@employment_headers, [])
-      row["Contact"] = input_row["Contact ID"]
+      row["Contact ID"] = input_row["Contact ID"]
       row["LIN ID"] = input_row["LIN ID"]
       row["Job Title"] = position.at_css(".item-title").text.slice(0, 74)
       row["Employer Name"] = position.at_css(".item-subtitle").text.slice(0, 149)

@@ -9,6 +9,7 @@ require_relative './linsc/cross_ref'
 require_relative './linsc/csv_handlers'
 require_relative './linsc/duck'
 require_relative './linsc/lin'
+Encoding.default_external = 'utf-8'
 
 
 class Linsc

@@ -87,14 +87,14 @@ class DuckScraper
         tries -= 1
         if tries > 0
           puts "\n\n"
-          puts msg
+          puts msg.backtrace
           puts 'RETRYING'
           puts "\n\n"
           proxy.used if proxy
           retry
         else
           append_ddg_row(input_row, msg, nil)
-          puts msg
+          puts msg.backtrace
         end
       end
     end

@@ -42,14 +42,26 @@ LIN4
 
 ## Usage
 
+- Download your linkedin connections export csv files and put them in an empty directory. Each of these files should have exactly the same filename as one of the lines from your recruiters.txt file.
+It is expected that these csvs will have the following fields: First Name, Last Name, E-mail Address, Company, Job Title. All other fields are ignored.
 
+- Run a Salesforce report and put the csv in the same directory as your LIN files. The required fields for the Salesforce file are: Contact ID, LIN ID, Email.
+This file should be named sf_ref.csv
 
+- In Powershell (or any terminal), navigate to the directory and run this command:
+```
+linsc
+```
 
-## Development
+- There are several optional flags you can provide to modify behaviour. To see the full list of available flags, run:
+```
+linsc -h
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+- If all proxies get blocked the program will exit. Wait a few hours or a day for the proxies to cool off, then run linsc again. It will pick up where it left off.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+- When scraping is complete, import your data. If you had the -i flag set, you must import the contact_insert csv, then export a new report with the fields: LIN ID, Contact ID.
+Name this csv history_ref.csv and put it in the same folder as your data. Run linsc again with the -e flag set and the new Contact IDs will be mapped to the education and employment histories for the new contacts. You can now import these new history objects.
 
 ## Contributing
 

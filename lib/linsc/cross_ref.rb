@@ -42,26 +42,26 @@ class CrossRef
       b = y[@master_lookup_field]
       a && b ? a <=> b : a ? -1 : 1
     end
-    master_lookup_values = master_data.collect {|row| row[@master_lookup_field] && row[@master_lookup_field].downcase}
     i = 0
     CSV.foreach(@child_path, headers: true, encoding: 'utf-8') do |child_row|
       i += 1
       puts "email lookup - row: #{i}/#{@child_length}"
       child_lookup_value = child_row[@child_lookup_field].downcase if child_row[@child_lookup_field]
       if (child_lookup_value && child_lookup_value.include?('@')) || !@email_key ## generalize this
-        match_index = master_lookup_values.bsearch_index do |master_lookup_value|
+        matching_row = master_data.bsearch do |master_lookup_row|
+          master_lookup_value = master_lookup_row[@master_lookup_field]
            child_lookup_value && master_lookup_value ?
                 child_lookup_value <=> master_lookup_value : child_lookup_value ? -1 : 1
         end
-        if !match_index
-          match_index = master_data.find_index do |master_row|
+        if !matching_row
+          matching_row = master_data.find do |master_row|
             master_secondary_lookups = @master_secondary_lookups.collect{|x| x && x.downcase}
             master_secondary_lookups.include?(child_lookup_value)
           end
         end
-        if match_index
+        if matching_row
           if @options[:update]
-            append_to_csv(@output_path, splice_rows(master_data[match_index], child_row))
+            append_to_csv(@output_path, splice_rows(matching_row, child_row))
           end
         else
           if @options[:insert]

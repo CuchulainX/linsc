@@ -28,7 +28,7 @@ class DuckScraper
     @input_length = CSV.read(@input_file).length - 1
     if File.exist?(@output_file)
       @start = CSV.read(@output_file, headers: true).length
-      puts "resuming from row #{@start}"
+      puts "resuming from row #{@start + 1}"
     else
       create_file(@output_file)
     end

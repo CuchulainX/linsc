@@ -154,7 +154,7 @@ class LinScraper
     begin
       cert_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/cacert.pem'
       cert_store = OpenSSL::X509::Store.new
-      cert_store.add_file(cert_file)
+      cert_store.add_file(cert_file.to_s)
       agent = Mechanize.new
       agent.cert_store = cert_store
 

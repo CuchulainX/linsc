@@ -4,10 +4,13 @@ class ProxyHandler
 
   def initialize(cooldown_time = 5)
     @cooldown_time = cooldown_time
-    @proxy_list = File.read('./../data/proxies.txt').split("\n")
+    proxy_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/proxies.txt'
+    agents_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/agents.txt'
+
+    @proxy_list = File.read(proxy_file.to_s).split("\n")
     .collect{|proxy| proxy.split(':')}
     @proxies = []
-    @ua_list = File.read('./../data/agents.txt').split("\n")
+    @ua_list = File.read(agents_file.to_s).split("\n")
 
     @proxy_list.each do |proxy_details|
       proxy = Proxy.new(ip: proxy_details[0], port: proxy_details[1],

@@ -25,7 +25,7 @@ class DuckScraper
     @headers = get_headers(@input_file)
     @headers << "Linkedin Import Status" unless @headers.include?("Linkedin Import Status")
     @headers << "Urls" unless @headers.include?("Urls")
-    @input_length = %x(wc -l "#{@input_file}").split[0].to_i - 1
+    @input_length = CSV.read(@input_file).length - 1
     if File.exist?(@output_file)
       @start = CSV.read(@output_file, headers: true).length
       puts "resuming from row #{@start}"

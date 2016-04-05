@@ -26,7 +26,7 @@ class CrossRef
         @headers << static_key
       end
     end if @static_values
-    @child_length = %x(wc -l "#{@child_path}").split[0].to_i - 1
+    @child_length = CSV.read(@child_path).length - 1
     if File.exist?(@output_path)
       File.delete(@output_path)
     end

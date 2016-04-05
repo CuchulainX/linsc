@@ -79,7 +79,7 @@ class LinScraper
     @headers.delete('Urls')
     @employment_headers = ["Contact ID", "Employer Name", "Job Title", "Start Date", "End Date", "Location", "LIN ID"]
     @education_headers = ["Contact ID", "School Name", "Major", "Graduation Year", "LIN ID"]
-    @input_length = %x(wc -l "#{@input_file}").split[0].to_i - 1
+    @input_length = CSV.read(@input_file).length - 1
     I18n.available_locales = [:en]
     if (@output_update && File.exist?(@output_update)) || (@output_insert && File.exist?(@output_insert))
       if @output_update

@@ -152,7 +152,11 @@ class LinScraper
   def validate(url, row)
     puts "checking url: #{url}"
     begin
+      cert_file = Pathname.new(File.dirname __dir__).realdirpath + '../data/cacert.pem'
+      cert_store = OpenSSL::X509::Store.new
+      cert_store.add_file(cert_file)
       agent = Mechanize.new
+      agent.cert_store = cert_store
 
       unless @noproxy
         proxy = @proxies.get_proxy

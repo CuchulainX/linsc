@@ -35,6 +35,9 @@ class ProxyHandler
       best_proxy
     else
       puts "All proxies are dead. Wait a few hours before resuming."
+      @proxies.each do |proxy|
+        puts "ip: #{proxy.ip} .... pages before burnout: #{proxy.pages_before_burnout} .... time of burnout: #{proxy.burnout_time}"
+      end
       exit
     end
   end

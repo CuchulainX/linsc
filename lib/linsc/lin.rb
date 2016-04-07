@@ -167,6 +167,7 @@ class LinScraper
       sleep(@cooldown) if @noproxy
       page = agent.get(url)
       puts 'ACCESS GRANTED'
+      proxy.good if proxy
 
       return false unless page.at_css("#name") && page.css("#experience .positions .position")
       return false unless name_check(page.at_css("#name").text, "#{row['First Name']} #{row['Last Name']}")
@@ -184,7 +185,6 @@ class LinScraper
           end
         end
       end
-      proxy.good if proxy
       if match
         return [url, page]
       else

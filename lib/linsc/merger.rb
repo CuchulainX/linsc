@@ -28,7 +28,7 @@ class Merger
     emails = {}
     @lin_files.each do |pn|
       lin_file = pn.to_s
-      recruiter_name = lin_file.match(/LIN[^.]+/)[0]
+      recruiter_name = pn.basename.to_s.match(/LIN[^.]+/)[0]
       puts "merging #{recruiter_name}"
       clean_file = File.read(lin_file, encoding: 'windows-1252').strip
       CSV.parse(clean_file, headers: true, encoding: 'windows-1252') do |row|

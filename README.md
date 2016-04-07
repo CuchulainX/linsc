@@ -9,7 +9,7 @@
 - Download the Windows Ruby installer from here: http://rubyinstaller.org/downloads/
 (tested on 2.2.4, but should work on 2.3)
 
-- Make sure Powershell is close, and install ruby (check all 3 boxes)
+- Make sure Powershell is closed, and install ruby (check all 3 boxes)
 
 - Open Powershell and run the command:
 ```ruby

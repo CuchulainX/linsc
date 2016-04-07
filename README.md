@@ -7,8 +7,9 @@
 - Make sure Powershell is installed
 
 - Download the Windows Ruby installer from here: http://rubyinstaller.org/downloads/
+(tested on 2.2.4, but should work on 2.3)
 
-- Install ruby
+- Make sure Powershell is close, and install ruby (check all 3 boxes)
 
 - Open Powershell and run the command:
 ```ruby
@@ -20,7 +21,7 @@ gem install linsc
 gem environment
 ```
 
-- Navigate to the path listed for INSTALLATION DIRECTORY, then gems -> linsc-(version) -> data
+- In your file manager, navigate to the path listed for INSTALLATION DIRECTORY, then gems -> linsc-(version) -> data
 
 - Here you will find an empty proxies.txt and recruiters.txt
 
@@ -42,7 +43,7 @@ LIN4
 
 ## Usage
 
-- Download your linkedin connections export csv files and put them in an empty directory. Each of these files should have exactly the same filename as one of the lines from your recruiters.txt file.
+- Download your linkedin connections export csv files and put them in an empty directory. Each of these files should have exactly the same filename as one of the lines from your recruiters.txt file, and should end with .csv.
 It is expected that these csvs will have the following fields: First Name, Last Name, E-mail Address, Company, Job Title. All other fields are ignored.
 
 - Run a Salesforce report and put the csv in the same directory as your LIN files. The required fields for the Salesforce file are: Contact ID, LIN ID, Email.

@@ -60,7 +60,7 @@ class LinScraper
     @noproxy = options[:noproxy]
     @proxies = ProxyHandler.new(@cooldown) unless @options[:noproxy]
     @headers = get_headers(@input_file)
-    @new_headers = ["Contact ID", "LIN ID", "CV TR", "Account Name", "Linkedin Import Status", "First Name", "Last Name", "Email", "LinkedIn Profile", "Candidate ID",
+    @new_headers = ["Contact ID", "LIN ID", "CV TR", "Account Name", "Account ID", "Linkedin Import Status", "First Name", "Last Name", "Email", "LinkedIn Profile", "Candidate ID",
             "LIN 1st Degree", "Title", "Contact Country", "Contact LIN Sector", "Resume Last Updated", "LIN Import Date", "CV Uploaded",
             "Employer 1 Title", "Employer Organization Name 1", "Employer 1 Start Date",
             "Employer 1 End Date", "Employer 1 Location", "Employer 1 Description",
@@ -255,12 +255,16 @@ class LinScraper
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
               input_row["Linkedin Import Status"] = 'Profile not found'
+              input_row["CV TR"] = '0' unless input_row["CV TR"] == '1'
+              input_row["CV Uploaded"] = '0' unless input_row["CV Uploaded"] == '1'
               output_row = create_row(input_row, @headers)
               puts input_row["Linkedin Import Status"]
               append_to_csv(@output_update, output_row)
             elsif @options [:insert]
               input_row << ["Linkedin Profile", nil]
               input_row.delete('Urls')
+              input_row["CV TR"] = '0'
+              input_row["CV Uploaded"] = '0'
               input_row["Linkedin Import Status"] = 'Profile not found'
               puts input_row["Linkedin Import Status"]
               output_row = create_row(input_row, @headers)
@@ -271,12 +275,16 @@ class LinScraper
           if @options[:update] && input_row['Contact ID'] && input_row['Contact ID'].strip.length > 0
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
+            input_row["CV TR"] = '0' unless input_row["CV TR"] == '1'
+            input_row["CV Uploaded"] = '0' unless input_row["CV Uploaded"] == '1'
             puts input_row["Linkedin Import Status"]
             output_row = create_row(input_row, @headers)
             append_to_csv(@output_update, output_row)
           elsif @options [:insert]
             input_row << ["Linkedin Profile", nil]
             input_row.delete('Urls')
+            input_row["CV TR"] = '0'
+            input_row["CV Uploaded"] = '0'
             puts input_row["Linkedin Import Status"]
             output_row = create_row(input_row, @headers)
             append_to_csv(@output_insert, output_row)

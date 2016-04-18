@@ -8,7 +8,7 @@ class CrossRef
   def initialize(input_dir:, child_path:, master_path:, output_path:,
                  master_lookup_field: 'Email', child_lookup_field: 'Email',
                  master_secondary_lookups: ['Email 2', 'Email 3'],
-                 static_values: {'Account Name' => 'Candidates'}, options:)
+                 static_values: {'Account Name' => 'Candidates', 'Account ID' => '00120000019Covx'}, options:)
     @input_dir, @child_path, @master_path, @output_path, @options =
       input_dir, child_path, master_path, output_path, options
     @master_lookup_field, @child_lookup_field, @master_secondary_lookups, @static_values =
@@ -53,7 +53,7 @@ class CrossRef
            child_lookup_value && master_lookup_value ?
                 child_lookup_value <=> master_lookup_value : child_lookup_value ? -1 : 1
         end
-        if !matching_row
+        if @master_secondary_lookups && !matching_row
           matching_row = master_data.find do |master_row|
             master_secondary_lookups = @master_secondary_lookups.collect{|x| x && x.downcase}
             master_secondary_lookups.include?(child_lookup_value)
@@ -105,8 +105,10 @@ class CrossRef
     child_row.each do |child_key, child_value|
       master_row[child_key] = child_value if master_row.has_key?(child_key)
     end
-    @static_values.each do |static_key, static_value|
-      master_row[static_key] = static_value if master_row.has_key?(static_key)
+    if @static_values
+      @static_values.each do |static_key, static_value|
+        master_row[static_key] = static_value if master_row.has_key?(static_key)
+      end
     end
     master_row
   end

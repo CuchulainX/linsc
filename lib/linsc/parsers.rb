@@ -4,6 +4,7 @@ module Parsers
     name = page.at_css("#name").text.split
     contact_id = input_row["Contact ID"]
     lin_id = input_row["LIN ID"]
+    account_id = input_row["Account ID"]
     cv_tr = input_row["CV TR"]
     acc_name = input_row["Account Name"]
     import_status = input_row["Linkedin Import Status"]
@@ -227,6 +228,7 @@ module Parsers
 
     row["Contact ID"] = contact_id
     row["LIN ID"] = lin_id
+    row["Account ID"] = account_id
     row["CV TR"] = "1"
     row["Account Name"] = acc_name
     row["Linkedin Import Status"] = import_status

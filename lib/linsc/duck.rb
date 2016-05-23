@@ -49,6 +49,11 @@ class DuckScraper
       end
       puts "ddg #{count}/#{@input_length}"
       begin
+        if input_row["LinkedIn Profile"] && input_row["LinkedIn Profile"].include?('linkedin')
+          puts "Existing Linkedin url found, skipping DDG"
+          append_ddg_row(input_row, "Using existing url", input_row["Linkedin Profile"])
+          next
+        end
         unless sufficient_data?(input_row)
           puts "Insufficient data, skipping"
           append_ddg_row(input_row, "Insufficient Data", nil)

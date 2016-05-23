@@ -23,6 +23,7 @@ class DuckScraper
       working_dir, input_file, output_file, options[:noproxy]
 
     @headers = get_headers(@input_file)
+    @headers.delete("LinkedIn Profile")
     @headers << "Linkedin Import Status" unless @headers.include?("Linkedin Import Status")
     @headers << "Urls" unless @headers.include?("Urls")
     @input_length = CSV.read(@input_file).length - 1
@@ -49,9 +50,11 @@ class DuckScraper
       end
       puts "ddg #{count}/#{@input_length}"
       begin
-        if input_row["LinkedIn Profile"] && input_row["LinkedIn Profile"].include?('linkedin')
+        lp = input_row["LinkedIn Profile"]
+        input_row.delete("LinkedIn Profile")
+        if lp && lp.include?('linkedin')
           puts "Existing Linkedin url found, skipping DDG"
-          append_ddg_row(input_row, "Using existing url", input_row["Linkedin Profile"])
+          append_ddg_row(input_row, "Using existing url", lp)
           next
         end
         unless sufficient_data?(input_row)

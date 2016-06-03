@@ -60,7 +60,7 @@ class Merger
         output_row = CSV::Row.new(@headers, [])
         correct_row.each do |key, value|
           if @mapping[key]
-            output_row[@mapping[key]] = value.encode('utf-8') if value
+            output_row[@mapping[key]] = value.encode('utf-8', invalid: :replace, undef: :replace, replace: '?') if value
           end
         end
         output_row['Email'] = output_row['Email'].downcase if output_row['Email']

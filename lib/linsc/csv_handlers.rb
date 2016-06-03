@@ -12,7 +12,7 @@ module CSVHandlers
   end
 
   def append_to_csv(file, row)
-    tries = 3
+    tries = 10
     begin
       f = CSV.open(file, "a+", headers: row.headers, force_quotes: true)
       f << row

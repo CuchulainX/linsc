@@ -55,7 +55,7 @@ class CrossRef
         end
         if @master_secondary_lookups && !matching_row
           matching_row = master_data.find do |master_row|
-            master_secondary_lookups = @master_secondary_lookups.collect{|x| x && x.downcase}
+            master_secondary_lookups = @master_secondary_lookups.collect{|x| master_row[x]&.downcase}
             master_secondary_lookups.include?(child_lookup_value)
           end
         end

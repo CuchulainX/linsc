@@ -16,8 +16,8 @@ class Linsc
   include CSVHandlers
 
   def merge
-    merge_map = {'First Name' => 'First Name', 'Last Name' => 'Last Name', 'E-mail Address' => 'Email',
-                  'Company' => 'Employer Organization Name 1', 'Job Title' => 'Employer 1 Title',
+    merge_map = {'FirstName' => 'First Name', 'LastName' => 'Last Name', 'EmailAddress' => 'Email',
+                  'Company' => 'Employer Organization Name 1', 'Position' => 'Employer 1 Title',
                   'Recruiter' => 'LIN 1st Degree'}
     Merger.new(@working_dir, @merge_path, merge_map).merge
   end

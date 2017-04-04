@@ -4,10 +4,10 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "linsc"
-  spec.version       = "0.0.17"
+  spec.version       = "0.0.18"
   spec.authors       = ["Dan Molloy"]
   spec.email         = ["danieljmolloy1@gmail.com"]
-  spec.date = '2017-04-03'
+  spec.date = '2017-04-04'
 
   spec.summary       = %q{Scrape Linkedin and import to Salesforce}
   spec.description   = %q{A gem for scraping public data of Linkedin connections and importing the data to Salesforce.}
